@@ -39,6 +39,9 @@ RUN dotnet publish ./UmbracoSite/UmbracoSite.csproj \
     -o /app/publish \
     --no-restore
 
+# Generate a dev HTTPS certificate in the SDK stage (has dotnet dev-certs tool)
+RUN dotnet dev-certs https -ep /app/publish/devcert.pfx -p devpassword
+
 # Copy compiled CSS from the styles stage
 COPY --from=styles /styles/wwwroot/css/ /app/publish/wwwroot/css/
 
@@ -58,18 +61,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends libicu-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ICU, curl, and OpenSSL; generate a self-signed dev certificate
+# Copy published output (includes dev cert from SDK stage)
 COPY --from=build /app/publish .
-
-# Generate a self-signed HTTPS dev certificate
-RUN openssl req -x509 -nodes -days 365 \
-    -newkey rsa:2048 \
-    -keyout /app/devcert.key \
-    -out /app/devcert.crt \
-    -subj "/CN=localhost" && \
-    openssl pkcs12 -export -out /app/devcert.pfx \
-    -inkey /app/devcert.key -in /app/devcert.crt \
-    -passout pass:devpassword
 
 # Umbraco stores media and logs in these directories
 VOLUME ["/app/umbraco/Data", "/app/umbraco/Logs", "/app/wwwroot/media"]
