@@ -1,0 +1,50 @@
+// =============================================================================
+// Components: Modal
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use '../abstracts/functions' as *;
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: z('modal');
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    @include flex-center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity $transition-base, visibility $transition-base;
+
+    &.is-active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+.modal {
+    background: var(--color-bg);
+    border-radius: var(--radius-xl);
+    box-shadow: $shadow-xl;
+    width: min(90vw, 560px);
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: scale-in 0.2s ease;
+
+    &__header {
+        @include flex-between;
+        padding: $space-5 $space-6;
+        border-bottom: $border-width solid var(--color-border);
+    }
+
+    &__body {
+        padding: $space-6;
+    }
+
+    &__footer {
+        @include flex-between;
+        padding: $space-4 $space-6;
+        border-top: $border-width solid var(--color-border);
+    }
+}

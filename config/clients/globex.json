@@ -1,0 +1,28 @@
+{
+    "client": {
+        "id": "globex",
+        "name": "Globex Industries",
+        "tagline": "Sustainable technology for a greener tomorrow"
+    },
+    "branding": {
+        "logo": "/assets/images/clients/globex/logo.svg",
+        "favicon": "/assets/images/clients/globex/favicon.ico",
+        "fonts": [
+            "https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Nunito+Sans:wght@400;500;600&display=swap"
+        ]
+    },
+    "content": {
+        "hero": {
+            "title": "Technology That Grows With You",
+            "subtitle": "Sustainable, scalable solutions for modern businesses.",
+            "cta_primary": { "text": "Explore Platform", "url": "/platform" },
+            "cta_secondary": { "text": "Our Story", "url": "/about" }
+        }
+    },
+    "features": {
+        "analytics": true,
+        "contact_form": true,
+        "blog": false,
+        "dark_mode": false
+    }
+}

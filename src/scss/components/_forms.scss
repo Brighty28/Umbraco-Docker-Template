@@ -1,0 +1,61 @@
+// =============================================================================
+// Components: Forms
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.form-group {
+    margin-bottom: $space-5;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: $space-2;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: var(--color-text);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: $space-3 $space-4;
+    font-size: $font-size-base;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: $border-width solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+    @include focus-ring;
+
+    &::placeholder {
+        color: var(--color-text-muted);
+    }
+
+    &:focus {
+        border-color: var(--color-primary);
+    }
+
+    &--error {
+        border-color: var(--color-error);
+    }
+}
+
+.form-textarea {
+    min-height: 8rem;
+    resize: vertical;
+}
+
+.form-help {
+    margin-top: $space-1;
+    font-size: $font-size-xs;
+    color: var(--color-text-muted);
+}
+
+.form-error {
+    margin-top: $space-1;
+    font-size: $font-size-xs;
+    color: var(--color-error);
+}

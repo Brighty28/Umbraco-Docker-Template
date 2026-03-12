@@ -1,0 +1,161 @@
+// =============================================================================
+// Abstracts: Variables (Design Tokens)
+// =============================================================================
+// These are the DEFAULT values. Client themes override these via the
+// themes/_client-theme.scss partial, which uses CSS custom properties
+// so that runtime changes are also possible.
+//
+// Convention:
+//   $token-name        → SCSS variable (compile-time)
+//   --token-name       → CSS custom property (runtime-overridable)
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// Color Palette – base (neutral) + brand tokens
+// ---------------------------------------------------------------------------
+
+// Neutrals
+$color-white:        #ffffff !default;
+$color-black:        #0a0a0a !default;
+$color-gray-50:      #fafafa !default;
+$color-gray-100:     #f4f4f5 !default;
+$color-gray-200:     #e4e4e7 !default;
+$color-gray-300:     #d4d4d8 !default;
+$color-gray-400:     #a1a1aa !default;
+$color-gray-500:     #71717a !default;
+$color-gray-600:     #52525b !default;
+$color-gray-700:     #3f3f46 !default;
+$color-gray-800:     #27272a !default;
+$color-gray-900:     #18181b !default;
+
+// Brand colors (overridden per client)
+$color-primary:      #2563eb !default;
+$color-primary-light:#60a5fa !default;
+$color-primary-dark: #1d4ed8 !default;
+
+$color-secondary:    #7c3aed !default;
+$color-secondary-light: #a78bfa !default;
+$color-secondary-dark:  #5b21b6 !default;
+
+$color-accent:       #f59e0b !default;
+
+// Semantic colors
+$color-success:      #16a34a !default;
+$color-warning:      #eab308 !default;
+$color-error:        #dc2626 !default;
+$color-info:         #0891b2 !default;
+
+// Surface & text
+$color-bg:           $color-white !default;
+$color-bg-alt:       $color-gray-50 !default;
+$color-text:         $color-gray-900 !default;
+$color-text-muted:   $color-gray-500 !default;
+$color-text-inverse: $color-white !default;
+
+// ---------------------------------------------------------------------------
+// Typography
+// ---------------------------------------------------------------------------
+$font-family-heading: 'Inter', 'Segoe UI', system-ui, sans-serif !default;
+$font-family-body:    'Inter', 'Segoe UI', system-ui, sans-serif !default;
+$font-family-mono:    'JetBrains Mono', 'Fira Code', monospace !default;
+
+// Type scale (major third – 1.25)
+$font-size-xs:    0.75rem !default;    // 12px
+$font-size-sm:    0.875rem !default;   // 14px
+$font-size-base:  1rem !default;       // 16px
+$font-size-md:    1.125rem !default;   // 18px
+$font-size-lg:    1.25rem !default;    // 20px
+$font-size-xl:    1.5rem !default;     // 24px
+$font-size-2xl:   1.875rem !default;   // 30px
+$font-size-3xl:   2.25rem !default;    // 36px
+$font-size-4xl:   3rem !default;       // 48px
+$font-size-5xl:   3.75rem !default;    // 60px
+
+$font-weight-normal:  400 !default;
+$font-weight-medium:  500 !default;
+$font-weight-semibold:600 !default;
+$font-weight-bold:    700 !default;
+
+$line-height-tight:   1.25 !default;
+$line-height-base:    1.6 !default;
+$line-height-loose:   1.8 !default;
+
+// ---------------------------------------------------------------------------
+// Spacing scale (8px base grid)
+// ---------------------------------------------------------------------------
+$space-unit: 0.5rem !default;  // 8px
+
+$space-1:  $space-unit * 0.5;    //  4px
+$space-2:  $space-unit;           //  8px
+$space-3:  $space-unit * 1.5;    // 12px
+$space-4:  $space-unit * 2;      // 16px
+$space-5:  $space-unit * 3;      // 24px
+$space-6:  $space-unit * 4;      // 32px
+$space-7:  $space-unit * 5;      // 40px
+$space-8:  $space-unit * 6;      // 48px
+$space-10: $space-unit * 8;      // 64px
+$space-12: $space-unit * 10;     // 80px
+$space-16: $space-unit * 14;     // 112px
+
+// ---------------------------------------------------------------------------
+// Borders & Radii
+// ---------------------------------------------------------------------------
+$border-width:     1px !default;
+$border-color:     $color-gray-200 !default;
+$radius-sm:        0.25rem !default;
+$radius-md:        0.5rem !default;
+$radius-lg:        0.75rem !default;
+$radius-xl:        1rem !default;
+$radius-full:      9999px !default;
+
+// ---------------------------------------------------------------------------
+// Shadows
+// ---------------------------------------------------------------------------
+$shadow-sm:   0 1px 2px 0 rgba(0, 0, 0, 0.05) !default;
+$shadow-md:   0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !default;
+$shadow-lg:   0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !default;
+$shadow-xl:   0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !default;
+
+// ---------------------------------------------------------------------------
+// Breakpoints
+// ---------------------------------------------------------------------------
+$breakpoint-sm:  576px !default;
+$breakpoint-md:  768px !default;
+$breakpoint-lg:  992px !default;
+$breakpoint-xl:  1200px !default;
+$breakpoint-2xl: 1400px !default;
+
+// Breakpoint map (consumed by respond-to mixin)
+$breakpoints: (
+    'sm':  $breakpoint-sm,
+    'md':  $breakpoint-md,
+    'lg':  $breakpoint-lg,
+    'xl':  $breakpoint-xl,
+    '2xl': $breakpoint-2xl,
+) !default;
+
+// ---------------------------------------------------------------------------
+// Layout
+// ---------------------------------------------------------------------------
+$container-max-width: 1200px !default;
+$container-padding:   $space-4 !default;
+$grid-columns:        12 !default;
+$grid-gutter:         $space-5 !default;
+
+// ---------------------------------------------------------------------------
+// Transitions
+// ---------------------------------------------------------------------------
+$transition-fast:     150ms ease !default;
+$transition-base:     250ms ease !default;
+$transition-slow:     400ms ease !default;
+
+// ---------------------------------------------------------------------------
+// Z-index scale
+// ---------------------------------------------------------------------------
+$z-dropdown:   100 !default;
+$z-sticky:     200 !default;
+$z-fixed:      300 !default;
+$z-overlay:    400 !default;
+$z-modal:      500 !default;
+$z-popover:    600 !default;
+$z-tooltip:    700 !default;

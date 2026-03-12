@@ -1,0 +1,13 @@
+// =============================================================================
+// Pages: About
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+
+.page-about {
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: $space-6;
+    }
+}

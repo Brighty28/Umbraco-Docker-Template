@@ -1,0 +1,38 @@
+// =============================================================================
+// Layout: Footer
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.site-footer {
+    background: var(--color-bg-alt);
+    border-top: $border-width solid var(--color-border);
+    padding-block: $space-10;
+
+    &__inner {
+        @include container;
+    }
+
+    &__grid {
+        display: grid;
+        gap: $space-8;
+        grid-template-columns: 1fr;
+
+        @include respond-to('md') {
+            grid-template-columns: 2fr repeat(3, 1fr);
+        }
+    }
+
+    &__bottom {
+        @include container;
+        @include flex-between;
+        flex-wrap: wrap;
+        gap: $space-4;
+        padding-top: $space-6;
+        margin-top: $space-8;
+        border-top: $border-width solid var(--color-border);
+        font-size: $font-size-sm;
+        color: var(--color-text-muted);
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "client": {
+        "id": "acme",
+        "name": "Acme Corporation",
+        "tagline": "Innovation at the speed of ambition"
+    },
+    "branding": {
+        "logo": "/assets/images/clients/acme/logo.svg",
+        "favicon": "/assets/images/clients/acme/favicon.ico",
+        "fonts": [
+            "https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+        ]
+    },
+    "content": {
+        "hero": {
+            "title": "Build the Future with Acme",
+            "subtitle": "Enterprise solutions that scale with your ambitions.",
+            "cta_primary": { "text": "Request a Demo", "url": "/demo" },
+            "cta_secondary": { "text": "View Solutions", "url": "/solutions" }
+        },
+        "navigation": [
+            { "label": "Home", "url": "/" },
+            { "label": "Solutions", "url": "/solutions" },
+            { "label": "Case Studies", "url": "/case-studies" },
+            { "label": "About", "url": "/about" },
+            { "label": "Contact", "url": "/contact" }
+        ]
+    },
+    "features": {
+        "analytics": true,
+        "contact_form": true,
+        "blog": true,
+        "dark_mode": true
+    },
+    "seo": {
+        "title": "Acme Corporation — Innovation at the speed of ambition",
+        "description": "Acme Corporation delivers enterprise-grade solutions that help businesses scale."
+    }
+}

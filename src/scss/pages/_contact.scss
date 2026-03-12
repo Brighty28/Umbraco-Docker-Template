@@ -1,0 +1,14 @@
+// =============================================================================
+// Pages: Contact
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.page-contact {
+    .contact-form-wrapper {
+        max-width: 640px;
+        margin-inline: auto;
+        padding: $space-8;
+    }
+}

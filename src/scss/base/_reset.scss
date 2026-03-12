@@ -1,0 +1,121 @@
+// =============================================================================
+// Base: Reset
+// =============================================================================
+// Modern CSS reset built on top of normalize.css (loaded in vendors).
+// Sets up box-sizing, removes default margins, and establishes baseline
+// behaviour. CSS custom properties are declared here on :root so that
+// client themes can override them at runtime.
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+
+// ---------------------------------------------------------------------------
+// CSS Custom Properties (runtime-overridable design tokens)
+// ---------------------------------------------------------------------------
+:root {
+    // Colors
+    --color-primary:       #{$color-primary};
+    --color-primary-light: #{$color-primary-light};
+    --color-primary-dark:  #{$color-primary-dark};
+    --color-secondary:     #{$color-secondary};
+    --color-accent:        #{$color-accent};
+    --color-success:       #{$color-success};
+    --color-warning:       #{$color-warning};
+    --color-error:         #{$color-error};
+
+    --color-bg:            #{$color-bg};
+    --color-bg-alt:        #{$color-bg-alt};
+    --color-text:          #{$color-text};
+    --color-text-muted:    #{$color-text-muted};
+    --color-text-inverse:  #{$color-text-inverse};
+    --color-border:        #{$border-color};
+
+    // Typography
+    --font-heading:  #{$font-family-heading};
+    --font-body:     #{$font-family-body};
+    --font-mono:     #{$font-family-mono};
+
+    // Layout
+    --container-max-width: #{$container-max-width};
+    --container-padding:   #{$container-padding};
+
+    // Radii
+    --radius-sm: #{$radius-sm};
+    --radius-md: #{$radius-md};
+    --radius-lg: #{$radius-lg};
+    --radius-xl: #{$radius-xl};
+}
+
+// ---------------------------------------------------------------------------
+// Box model
+// ---------------------------------------------------------------------------
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+// ---------------------------------------------------------------------------
+// Root & body
+// ---------------------------------------------------------------------------
+html {
+    font-size: 100%; // 16px base
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+
+    @media (prefers-reduced-motion: reduce) {
+        scroll-behavior: auto;
+    }
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// ---------------------------------------------------------------------------
+// Elements
+// ---------------------------------------------------------------------------
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--color-primary-dark);
+    }
+}
+
+// Remove animations for users who prefer reduced motion
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

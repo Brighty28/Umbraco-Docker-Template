@@ -1,0 +1,17 @@
+// =============================================================================
+// Components: Alerts
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+
+.alert {
+    padding: $space-4 $space-5;
+    border-radius: var(--radius-md);
+    border-left: 4px solid;
+    font-size: $font-size-sm;
+
+    &--info    { border-color: var(--color-info);    background: rgba(8, 145, 178, 0.06); }
+    &--success { border-color: var(--color-success); background: rgba(22, 163, 74, 0.06); }
+    &--warning { border-color: var(--color-warning); background: rgba(234, 179, 8, 0.06); }
+    &--error   { border-color: var(--color-error);   background: rgba(220, 38, 38, 0.06); }
+}

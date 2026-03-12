@@ -1,0 +1,25 @@
+// =============================================================================
+// Layout: Sidebar
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.sidebar {
+    padding: $space-6;
+
+    @include respond-to('lg') {
+        position: sticky;
+        top: 6rem;
+        max-height: calc(100vh - 6rem);
+        overflow-y: auto;
+    }
+}
+
+.layout-with-sidebar {
+    @include respond-to('lg') {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: $space-8;
+    }
+}

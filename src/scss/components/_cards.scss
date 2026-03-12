@@ -1,0 +1,57 @@
+// =============================================================================
+// Components: Cards
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.card {
+    background: var(--color-bg);
+    border: $border-width solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: box-shadow $transition-base, transform $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+    }
+
+    &__image {
+        width: 100%;
+        @include aspect-ratio(16, 9);
+        object-fit: cover;
+    }
+
+    &__body {
+        padding: $space-5;
+    }
+
+    &__title {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        margin-bottom: $space-2;
+    }
+
+    &__text {
+        color: var(--color-text-muted);
+        font-size: $font-size-sm;
+        @include line-clamp(3);
+    }
+
+    &__footer {
+        padding: $space-4 $space-5;
+        border-top: $border-width solid var(--color-border);
+        @include flex-between;
+    }
+
+    // Elevated variant
+    &--elevated {
+        border: none;
+        box-shadow: $shadow-sm;
+
+        &:hover {
+            box-shadow: $shadow-lg;
+            transform: translateY(-2px);
+        }
+    }
+}

@@ -1,0 +1,77 @@
+// =============================================================================
+// Components: Buttons
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-2;
+    padding: $space-3 $space-5;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    line-height: 1;
+    border: $border-width solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-decoration: none;
+    white-space: nowrap;
+    @include focus-ring;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // --- Variants ---
+
+    &--primary {
+        background: var(--color-primary);
+        color: var(--color-text-inverse);
+
+        &:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+        }
+    }
+
+    &--secondary {
+        background: transparent;
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+
+        &:hover:not(:disabled) {
+            background: var(--color-primary);
+            color: var(--color-text-inverse);
+        }
+    }
+
+    &--ghost {
+        background: transparent;
+        color: var(--color-text);
+
+        &:hover:not(:disabled) {
+            background: var(--color-bg-alt);
+        }
+    }
+
+    // --- Sizes ---
+
+    &--sm {
+        padding: $space-2 $space-3;
+        font-size: $font-size-xs;
+    }
+
+    &--lg {
+        padding: $space-4 $space-8;
+        font-size: $font-size-base;
+        border-radius: var(--radius-lg);
+    }
+
+    &--full {
+        width: 100%;
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "name": "website-package",
+    "version": "1.0.0",
+    "description": "Configurable, per-client website Docker package with 7-1 SCSS architecture",
+    "private": true,
+    "scripts": {
+        "dev": "node scripts/dev-server.js",
+        "build": "node scripts/build.js",
+        "build:client": "node scripts/build.js --client=${CLIENT_ID:-default}",
+        "scss:compile": "sass src/scss/main.scss dist/css/main.css --style=compressed --load-path=node_modules",
+        "scss:watch": "sass src/scss/main.scss dist/css/main.css --watch --source-map --load-path=node_modules",
+        "lint:scss": "stylelint 'src/scss/**/*.scss'",
+        "docker:build": "docker build --build-arg CLIENT_ID=${CLIENT_ID:-default} -t website-package:${CLIENT_ID:-default} .",
+        "docker:run": "docker run -p 8080:80 website-package:${CLIENT_ID:-default}",
+        "new-client": "node scripts/new-client.js"
+    },
+    "dependencies": {
+        "normalize.css": "^8.0.1"
+    },
+    "devDependencies": {
+        "sass": "^1.77.0",
+        "terser": "^5.31.0",
+        "html-minifier-terser": "^7.2.0",
+        "chokidar": "^3.6.0",
+        "browser-sync": "^3.0.0",
+        "deepmerge": "^4.3.1",
+        "mustache": "^4.2.0",
+        "stylelint": "^16.0.0",
+        "stylelint-config-standard-scss": "^13.0.0"
+    }
+}

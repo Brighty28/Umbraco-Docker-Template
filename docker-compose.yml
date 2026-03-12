@@ -1,0 +1,71 @@
+# ==============================================================================
+# Docker Compose – local development & multi-client builds
+# ==============================================================================
+# Usage:
+#   Development:  docker compose up dev
+#   Client build: CLIENT_ID=acme docker compose up --build client-site
+#   All clients:  docker compose --profile all up --build
+# ==============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Development server with hot-reload
+  # ---------------------------------------------------------------------------
+  dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    environment:
+      - CLIENT_ID=${CLIENT_ID:-default}
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+
+  # ---------------------------------------------------------------------------
+  # Production build for a specific client
+  # ---------------------------------------------------------------------------
+  client-site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CLIENT_ID: ${CLIENT_ID:-default}
+        ENVIRONMENT: ${ENVIRONMENT:-production}
+    ports:
+      - "${PORT:-8080}:80"
+    environment:
+      # Runtime overrides (injected via entrypoint)
+      - SITE_TITLE=${SITE_TITLE:-}
+      - ANALYTICS_ID=${ANALYTICS_ID:-}
+      - API_BASE_URL=${API_BASE_URL:-}
+      - FEATURE_FLAGS=${FEATURE_FLAGS:-}
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Example: named client profiles for CI/CD
+  # ---------------------------------------------------------------------------
+  client-acme:
+    extends:
+      service: client-site
+    build:
+      args:
+        CLIENT_ID: acme
+    ports:
+      - "8081:80"
+    profiles:
+      - all
+
+  client-globex:
+    extends:
+      service: client-site
+    build:
+      args:
+        CLIENT_ID: globex
+    ports:
+      - "8082:80"
+    profiles:
+      - all

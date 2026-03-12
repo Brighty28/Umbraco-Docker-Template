@@ -1,0 +1,59 @@
+// =============================================================================
+// Components: Hero
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use '../abstracts/functions' as *;
+
+.hero {
+    position: relative;
+    padding-block: $space-16;
+    text-align: center;
+    overflow: hidden;
+
+    @include respond-to('lg') {
+        padding-block: space(20);
+    }
+
+    &__inner {
+        @include container;
+        position: relative;
+        z-index: 1;
+    }
+
+    &__title {
+        font-size: fluid(36, 72);
+        font-weight: $font-weight-bold;
+        letter-spacing: -0.03em;
+        margin-bottom: $space-5;
+    }
+
+    &__subtitle {
+        font-size: fluid(16, 22);
+        color: var(--color-text-muted);
+        max-width: 640px;
+        margin-inline: auto;
+        margin-bottom: $space-8;
+    }
+
+    &__actions {
+        display: flex;
+        justify-content: center;
+        gap: $space-4;
+        flex-wrap: wrap;
+    }
+
+    // Background gradient (overridden by client theme)
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+            ellipse at 50% 0%,
+            rgba(var(--color-primary), 0.08) 0%,
+            transparent 70%
+        );
+        pointer-events: none;
+    }
+}

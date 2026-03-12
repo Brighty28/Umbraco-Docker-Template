@@ -1,0 +1,72 @@
+// =============================================================================
+// Layout: Navigation
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use '../abstracts/functions' as *;
+@use '../abstracts/placeholders';
+
+.nav {
+    &__list {
+        @extend %reset-list;
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+    }
+
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        padding: $space-2 $space-3;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        color: var(--color-text-muted);
+        border-radius: var(--radius-md);
+        transition: color $transition-fast, background $transition-fast;
+
+        &:hover,
+        &--active {
+            color: var(--color-primary);
+            background: rgba(var(--color-primary), 0.08);
+        }
+    }
+
+    // Mobile hamburger nav
+    &--mobile {
+        display: none;
+
+        @include respond-below('md') {
+            display: block;
+        }
+    }
+
+    &--desktop {
+        @include respond-below('md') {
+            display: none;
+        }
+    }
+}
+
+// Mobile menu overlay
+.mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: z('overlay');
+    background: var(--color-bg);
+    padding: $space-8 $space-6;
+    transform: translateX(100%);
+    transition: transform $transition-base;
+
+    &.is-open {
+        transform: translateX(0);
+    }
+
+    &__link {
+        display: block;
+        padding: $space-4 0;
+        font-size: $font-size-xl;
+        font-weight: $font-weight-semibold;
+        border-bottom: $border-width solid var(--color-border);
+    }
+}
