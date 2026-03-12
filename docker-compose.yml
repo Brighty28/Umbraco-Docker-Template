@@ -70,7 +70,7 @@ services:
       - SQL_HOST=sql
     volumes:
       - ./docker/sql/init-db.sh:/usr/local/bin/init-db.sh:ro
-    entrypoint: /bin/bash /usr/local/bin/init-db.sh
+    entrypoint: /bin/bash -c "sed 's/\r$//' /usr/local/bin/init-db.sh | /bin/bash"
     restart: "no"
 
 volumes:
