@@ -24,9 +24,11 @@ services:
       - "${UMBRACO_PORT:-8080}:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - CLIENT_ID=${CLIENT_ID:-default}
       - ConnectionStrings__umbracoDbDSN=Server=sql;Database=${UMBRACO_DB:-UmbracoDb};User Id=sa;Password=${SA_PASSWORD:-Umbraco_Docker_P@ss1};TrustServerCertificate=True
       - ConnectionStrings__umbracoDbDSN_ProviderName=Microsoft.Data.SqlClient
+      - Umbraco__CMS__Global__UseHttps=false
     volumes:
       - umbraco-media:/app/wwwroot/media
       - umbraco-logs:/app/umbraco/Logs

@@ -27,6 +27,8 @@ builder.CreateUmbracoBuilder()
 
 WebApplication app = builder.Build();
 
+app.UseForwardedHeaders();
+
 await app.BootUmbracoAsync();
 
 app.UseUmbraco()
