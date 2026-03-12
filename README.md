@@ -1,178 +1,163 @@
-# Umbraco-Docker-Template
-# Website Package – Configurable Docker Container
+# Umbraco 17 Docker Template
 
-A production-ready, per-client configurable website packaged as a Docker container, designed for deployment on Azure App Services. Uses the **7-1 SCSS architecture** for maintainable, themeable stylesheets.
+A production-ready Docker template for running [Umbraco 17](https://umbraco.com/) CMS with SQL Server. Includes a multi-stage Dockerfile, Docker Compose configuration, and everything you need to get an Umbraco site running in containers.
 
 ---
 
-## Architecture Overview
+## Prerequisites
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Docker Image (per client)                 │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │ Nginx (Alpine)                                         │ │
-│  │  ├── /css/main.css      ← compiled from 7-1 SCSS      │ │
-│  │  ├── /js/app.js         ← bundled + minified           │ │
-│  │  ├── /js/runtime-config ← env vars injected at start   │ │
-│  │  ├── /index.html        ← rendered from Mustache tpl   │ │
-│  │  └── /assets/           ← images, fonts, client logos  │ │
-│  └────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-         ▲                                    ▲
-    Build-time config                   Runtime config
-    (CLIENT_ID arg)                   (env vars on start)
-```
-
-## Configuration Layers
-
-The system uses three layers of configuration, each overriding the previous:
-
-| Layer | When | What | Example |
-|-------|------|------|---------|
-| **Base defaults** | Always loaded | `config/default.json` | Default nav, features, SEO |
-| **Client overrides** | Build time (`--build-arg CLIENT_ID=acme`) | `config/clients/acme.json` | Brand name, colours, content |
-| **Runtime env vars** | Container start | `docker run -e API_BASE_URL=...` | API URLs, analytics IDs, feature flags |
-
-## 7-1 SCSS Architecture
-
-```
-src/scss/
-├── abstracts/          # No CSS output – design tokens only
-│   ├── _variables.scss    # Colour palette, typography scale, spacing, breakpoints
-│   ├── _mixins.scss       # respond-to(), flex-center(), focus-ring(), etc.
-│   ├── _functions.scss    # rem(), fluid(), tint(), shade(), z()
-│   └── _placeholders.scss # %reset-list, %clearfix, etc.
-│
-├── base/               # Global element styles
-│   ├── _reset.scss        # Box model + CSS custom properties on :root
-│   ├── _typography.scss   # Headings, body text, fluid type scale
-│   ├── _animations.scss   # @keyframes: fade-in, slide-up, scale-in
-│   └── _utilities.scss    # .sr-only, .text-center, .mx-auto, etc.
-│
-├── layout/             # Structural page sections
-│   ├── _grid.scss         # .container, .grid--2/3/4, .section
-│   ├── _header.scss       # Sticky header with backdrop blur
-│   ├── _footer.scss       # Multi-column footer grid
-│   ├── _sidebar.scss      # Sticky sidebar layout
-│   └── _navigation.scss   # Desktop nav + mobile hamburger menu
-│
-├── components/         # Reusable UI blocks
-│   ├── _buttons.scss      # .btn variants (primary, secondary, ghost, sizes)
-│   ├── _cards.scss        # .card with image, body, footer, elevated variant
-│   ├── _forms.scss        # Inputs, textareas, labels, validation states
-│   ├── _modal.scss        # Overlay + centred modal with animations
-│   ├── _hero.scss         # Full-width hero with gradient background
-│   └── _alerts.scss       # Info, success, warning, error alerts
-│
-├── pages/              # Page-specific styles
-│   ├── _home.scss
-│   ├── _about.scss
-│   └── _contact.scss
-│
-├── themes/             # Client-specific overrides
-│   ├── _client-theme.scss  # ← auto-replaced at build time
-│   ├── _acme.scss          # Acme Corp: red palette, Oswald headings
-│   └── _globex.scss        # Globex: green palette, Nunito, rounded shapes
-│
-├── vendors/            # Third-party CSS
-│   ├── _normalize.scss
-│   └── _vendor-overrides.scss
-│
-└── main.scss           # Entry point – imports all partials in order
-```
-
-### How Client Theming Works
-
-Client themes override **CSS custom properties** declared on `:root` in `base/_reset.scss`. This means:
-
-1. All SCSS compiles with default values (fast, cacheable builds)
-2. Client branding is applied through CSS custom properties
-3. Themes can even be swapped at runtime by changing CSS variables
-
-```scss
-// src/scss/themes/_acme.scss
-:root {
-    --color-primary:  #e11d48;
-    --font-heading:   'Oswald', sans-serif;
-    --radius-md:      4px;
-}
-```
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose plugin)
+- At least 4 GB RAM allocated to Docker (SQL Server requirement)
 
 ## Quick Start
 
-### Add a new client
+1. **Clone the repository**
 
-```bash
-npm run new-client -- --id=newcorp --name="NewCorp Inc"
+   ```bash
+   git clone https://github.com/Brighty28/Umbraco-Docker-Template.git
+   cd Umbraco-Docker-Template
+   ```
+
+2. **Start the containers**
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. **Open Umbraco**
+
+   Navigate to [http://localhost:8080](http://localhost:8080) and complete the Umbraco installer. You will be prompted to create your admin account on first run.
+
+4. **Access the backoffice**
+
+   Once installed, the backoffice is available at [http://localhost:8080/umbraco](http://localhost:8080/umbraco).
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│              Docker Compose Network              │
+│                                                  │
+│  ┌──────────────────┐   ┌─────────────────────┐ │
+│  │   Umbraco 17     │   │   SQL Server 2022   │ │
+│  │   (.NET 9)       │──▶│   (Linux)           │ │
+│  │   Port: 8080     │   │   Port: 1433        │ │
+│  └──────────────────┘   └─────────────────────┘ │
+│         │                        │               │
+│    ┌────┴────┐              ┌────┴────┐          │
+│    │  Media  │              │ SQL Data│          │
+│    │ Volume  │              │ Volume  │          │
+│    └─────────┘              └─────────┘          │
+└─────────────────────────────────────────────────┘
 ```
 
-This scaffolds:
-- `config/clients/newcorp.json` – content & feature config
-- `src/scss/themes/_newcorp.scss` – brand theme overrides
-- `src/assets/images/clients/newcorp/` – logo & assets directory
+## Project Structure
 
-### Build & run locally
-
-```bash
-# Development (hot reload)
-CLIENT_ID=acme docker compose up dev
-
-# Production build
-CLIENT_ID=acme docker compose up --build client-site
-
-# Visit http://localhost:8080
+```
+Umbraco-Docker-Template/
+├── Dockerfile              # Multi-stage build (SDK → Runtime)
+├── docker-compose.yml      # Umbraco + SQL Server services
+├── .dockerignore            # Files excluded from Docker build
+├── .env.example             # Environment variable template
+└── src/
+    └── UmbracoSite/
+        ├── UmbracoSite.csproj   # .NET 9 project with Umbraco 17
+        ├── Program.cs            # Application entry point
+        ├── appsettings.json      # Umbraco configuration
+        ├── appsettings.Development.json
+        └── Views/
+            └── _ViewImports.cshtml
 ```
 
-### Build a Docker image
+## Configuration
+
+### Environment Variables
+
+Copy the example file and adjust as needed:
 
 ```bash
-docker build \
-    --build-arg CLIENT_ID=acme \
-    --build-arg ENVIRONMENT=production \
-    -t website-package:acme .
+cp .env.example .env
 ```
 
-### Deploy to Azure App Service
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SA_PASSWORD` | `Umbraco_Docker_P@ss1` | SQL Server SA password |
+| `UMBRACO_PORT` | `8080` | Host port for Umbraco |
+| `SQL_PORT` | `1433` | Host port for SQL Server |
+| `ASPNETCORE_ENVIRONMENT` | `Development` | ASP.NET environment |
+
+### Connection String
+
+The connection string is configured in `docker-compose.yml` and automatically connects Umbraco to the SQL Server container. For production, override via environment variables or mounted config files.
+
+## Common Commands
 
 ```bash
-# Tag and push to Azure Container Registry
-az acr login --name yourregistry
-docker tag website-package:acme yourregistry.azurecr.io/website-package:acme-latest
-docker push yourregistry.azurecr.io/website-package:acme-latest
+# Start all services in the background
+docker compose up -d
+
+# Rebuild and start (after code changes)
+docker compose up --build -d
+
+# View Umbraco logs
+docker compose logs -f umbraco
+
+# Stop all services
+docker compose down
+
+# Stop and remove all data (database, media)
+docker compose down -v
+
+# Connect to SQL Server from host (requires sqlcmd or Azure Data Studio)
+# Server: localhost,1433 | User: sa | Password: (see .env)
+```
+
+## Production Deployment
+
+For production use, consider the following:
+
+1. **Change the SA password** – Use a strong password via the `SA_PASSWORD` environment variable
+2. **Set `ASPNETCORE_ENVIRONMENT=Production`** in your environment
+3. **Use persistent storage** – The Docker volumes persist data, but for production mount to reliable storage
+4. **Configure HTTPS** – Place a reverse proxy (Nginx, Traefik, Azure App Gateway) in front of Umbraco
+5. **Unattended install** – Set `Umbraco:CMS:Unattended:InstallUnattended` to `true` in `appsettings.json` for automated deployments
+
+### Azure App Service Deployment
+
+```bash
+# Build and tag the image
+docker build -t your-registry.azurecr.io/umbraco-site:latest .
+
+# Push to Azure Container Registry
+az acr login --name your-registry
+docker push your-registry.azurecr.io/umbraco-site:latest
 
 # Deploy to App Service
 az webapp config container set \
-    --name app-acme-prod \
+    --name your-app-name \
     --resource-group your-rg \
-    --container-image yourregistry.azurecr.io/website-package:acme-latest \
-    --container-registry-url https://yourregistry.azurecr.io
-
-# Set runtime overrides
-az webapp config appsettings set \
-    --name app-acme-prod \
-    --resource-group your-rg \
-    --settings \
-        ANALYTICS_ID="G-XXXXXXXXXX" \
-        API_BASE_URL="https://api.acme.com"
+    --container-image your-registry.azurecr.io/umbraco-site:latest
 ```
 
-## Runtime Environment Variables
+## Tech Stack
 
-These are injected at container startup (no rebuild needed):
+- **Umbraco 17** – Open-source .NET CMS
+- **.NET 9** – Runtime and SDK
+- **SQL Server 2022** – Database (Linux container)
+- **Docker** – Containerisation
+- **Docker Compose** – Multi-container orchestration
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SITE_TITLE` | Override page title | `"Acme Corp"` |
-| `ANALYTICS_ID` | GA4 or similar tracking ID | `"G-ABC123"` |
-| `API_BASE_URL` | Backend API endpoint | `"https://api.acme.com"` |
-| `FEATURE_FLAGS` | JSON string of feature flags | `'{"dark_mode":true}'` |
+## Troubleshooting
 
-## CI/CD
+| Issue | Solution |
+|-------|----------|
+| SQL Server won't start | Ensure Docker has at least 4 GB RAM allocated |
+| Connection refused on first start | SQL Server needs ~30s to initialise – Umbraco will retry automatically |
+| Port conflict on 8080 or 1433 | Change `UMBRACO_PORT` or `SQL_PORT` in your `.env` file |
+| Umbraco shows database error | Check SQL Server logs: `docker compose logs sql` |
 
-The included `azure-pipelines.yml` automatically:
-1. Builds a Docker image for each configured client
-2. Pushes to Azure Container Registry
-3. Deploys to the corresponding Azure App Service
+## License
 
-See the pipeline file for configuration details.
+This template is provided as-is for use in your own projects. Umbraco CMS is licensed under the [MIT License](https://github.com/umbraco/Umbraco-CMS/blob/contrib/LICENSE.md).

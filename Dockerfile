@@ -1,70 +1,50 @@
 # ==============================================================================
-# Multi-stage Dockerfile for configurable client website package
-# Designed for Azure App Service deployment
+# Multi-stage Dockerfile for Umbraco 17 CMS
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Stage 1: Build – compile SCSS, bundle JS, generate static assets
+# Stage 1: Build – restore, build, and publish the Umbraco project
 # ------------------------------------------------------------------------------
-FROM node:20-alpine AS builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+WORKDIR /src
+
+# Copy project file and restore dependencies
+COPY src/UmbracoSite/UmbracoSite.csproj ./UmbracoSite/
+RUN dotnet restore ./UmbracoSite/UmbracoSite.csproj
+
+# Copy the rest of the source and publish
+COPY src/ .
+RUN dotnet publish ./UmbracoSite/UmbracoSite.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+# ------------------------------------------------------------------------------
+# Stage 2: Production – lightweight ASP.NET runtime
+# ------------------------------------------------------------------------------
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS production
 
 WORKDIR /app
 
-# Install build dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --prefer-offline
+# Install ICU for globalisation support
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libicu-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy source files
-COPY src/ ./src/
-COPY config/ ./config/
-COPY scripts/ ./scripts/
+# Copy published output
+COPY --from=build /app/publish .
 
-# Accept build-time client configuration
-ARG CLIENT_ID=default
-ARG ENVIRONMENT=production
+# Umbraco stores media and logs in these directories
+VOLUME ["/app/umbraco/Data", "/app/umbraco/Logs", "/app/wwwroot/media"]
 
-ENV CLIENT_ID=${CLIENT_ID}
-ENV ENVIRONMENT=${ENVIRONMENT}
+# ASP.NET listens on port 8080 by default in .NET 8+
+EXPOSE 8080
 
-# Run the build pipeline:
-#   1. Merge base config with client overrides
-#   2. Compile SCSS with client theme variables
-#   3. Bundle and minify JS
-#   4. Render HTML templates with client content
-RUN node scripts/build.js --client=${CLIENT_ID} --env=${ENVIRONMENT}
+ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
-# ------------------------------------------------------------------------------
-# Stage 2: Production – lightweight Nginx serving static assets
-# ------------------------------------------------------------------------------
-FROM nginx:1.27-alpine AS production
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/umbraco/api/keepalive/ping || exit 1
 
-# Labels for Azure App Service & container registry
-LABEL maintainer="platform-team"
-LABEL com.azure.app-service.compatible="true"
-
-# Install envsubst for runtime config injection
-RUN apk add --no-cache gettext
-
-# Remove default Nginx content
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy custom Nginx configuration
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/default.conf.template /etc/nginx/templates/default.conf.template
-
-# Copy built assets from builder stage
-COPY --from=builder /app/dist/ /usr/share/nginx/html/
-
-# Copy runtime configuration script
-COPY docker/entrypoint.sh /docker-entrypoint.d/40-runtime-config.sh
-RUN chmod +x /docker-entrypoint.d/40-runtime-config.sh
-
-# Azure App Service expects port 80 (or 8080 via WEBSITES_PORT)
-EXPOSE 80
-
-# Health check for Azure App Service
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -qO- http://localhost/health || exit 1
-
-# Nginx base image entrypoint handles template substitution + startup
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["dotnet", "UmbracoSite.dll"]
