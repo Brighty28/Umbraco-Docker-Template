@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using UmbracoSite.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -20,11 +19,6 @@ builder.Services.Configure<FeatureSettings>(
 builder.Services.Configure<ClientSettings>(
     builder.Configuration.GetSection(ClientSettings.SectionName));
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-});
-
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
@@ -32,8 +26,6 @@ builder.CreateUmbracoBuilder()
     .Build();
 
 WebApplication app = builder.Build();
-
-app.UseForwardedHeaders();
 
 await app.BootUmbracoAsync();
 

@@ -58,19 +58,30 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends libicu-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy published output
+# Install ICU, curl, and OpenSSL; generate a self-signed dev certificate
 COPY --from=build /app/publish .
+
+# Generate a self-signed HTTPS dev certificate
+RUN openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
+    -keyout /app/devcert.key \
+    -out /app/devcert.crt \
+    -subj "/CN=localhost" && \
+    openssl pkcs12 -export -out /app/devcert.pfx \
+    -inkey /app/devcert.key -in /app/devcert.crt \
+    -passout pass:devpassword
 
 # Umbraco stores media and logs in these directories
 VOLUME ["/app/umbraco/Data", "/app/umbraco/Logs", "/app/wwwroot/media"]
 
-# ASP.NET listens on port 8080 by default in .NET 8+
-EXPOSE 8080
+EXPOSE 8080 8443
 
-ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_URLS="https://+:8443;http://+:8080"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/devcert.pfx
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password=devpassword
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/umbraco/api/keepalive/ping || exit 1
+    CMD curl -fk https://localhost:8443/umbraco/api/keepalive/ping || exit 1
 
 ENTRYPOINT ["dotnet", "UmbracoSite.dll"]
