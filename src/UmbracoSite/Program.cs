@@ -1,23 +1,6 @@
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using UmbracoSite.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-// Configure Kestrel with HTTPS using a self-signed cert for Docker development
-var certPath = Path.Combine(builder.Environment.ContentRootPath, "devcert.crt");
-var keyPath = Path.Combine(builder.Environment.ContentRootPath, "devcert.key");
-if (File.Exists(certPath) && File.Exists(keyPath))
-{
-    builder.WebHost.ConfigureKestrel(kestrel =>
-    {
-        kestrel.ListenAnyIP(8080);
-        kestrel.ListenAnyIP(8443, opts =>
-        {
-            opts.UseHttps(X509Certificate2.CreateFromPemFile(certPath, keyPath));
-        });
-    });
-}
 
 // Load client-specific configuration overlay if CLIENT_ID is set
 string clientId = builder.Configuration["Client:Id"]

@@ -53,30 +53,25 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS production
 
 WORKDIR /app
 
-# Install ICU for globalisation support, curl for healthcheck, openssl for cert
+# Install ICU for globalisation support and curl for healthcheck
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libicu-dev curl openssl && \
+    apt-get install -y --no-install-recommends libicu-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy published output
 COPY --from=build /app/publish .
 
-# Generate a self-signed dev certificate with SAN for localhost
-RUN openssl req -x509 -nodes -days 365 \
-    -newkey rsa:2048 \
-    -keyout /app/devcert.key \
-    -out /app/devcert.crt \
-    -subj "/CN=localhost" \
-    -addext "subjectAltName=DNS:localhost,DNS:umbraco,IP:127.0.0.1"
-
 # Umbraco stores media and logs in these directories
 VOLUME ["/app/umbraco/Data", "/app/umbraco/Logs", "/app/wwwroot/media"]
 
-EXPOSE 8080 8443
+# Container serves HTTP on 8080; use a reverse proxy or host cert for HTTPS
+EXPOSE 8080
 
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -fk https://localhost:8443/umbraco/api/keepalive/ping || exit 1
+    CMD curl -f http://localhost:8080/umbraco/api/keepalive/ping || exit 1
 
 ENTRYPOINT ["dotnet", "UmbracoSite.dll"]
