@@ -31,8 +31,8 @@ services:
       - umbraco-media:/app/wwwroot/media
       - umbraco-logs:/app/umbraco/Logs
     depends_on:
-      sql:
-        condition: service_healthy
+      sql-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
@@ -44,20 +44,34 @@ services:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=${SA_PASSWORD:-Umbraco_Docker_P@ss1}
       - MSSQL_PID=Developer
-      - UMBRACO_DB=${UMBRACO_DB:-UmbracoDb}
     ports:
       - "${SQL_PORT:-1433}:1433"
     volumes:
       - sql-data:/var/opt/mssql
-      - ./docker/sql/init-db.sh:/usr/local/bin/init-db.sh:ro
-    entrypoint: /bin/bash -c "/usr/local/bin/init-db.sh & /opt/mssql/bin/sqlservr"
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -d "$${UMBRACO_DB}" -Q "SELECT 1" || exit 1
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
       interval: 10s
       timeout: 5s
       start_period: 30s
       retries: 5
     restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # One-shot init: waits for SQL Server, creates the database, then exits
+  # ---------------------------------------------------------------------------
+  sql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sql:
+        condition: service_healthy
+    environment:
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD:-Umbraco_Docker_P@ss1}
+      - UMBRACO_DB=${UMBRACO_DB:-UmbracoDb}
+      - SQL_HOST=sql
+    volumes:
+      - ./docker/sql/init-db.sh:/usr/local/bin/init-db.sh:ro
+    entrypoint: /bin/bash /usr/local/bin/init-db.sh
+    restart: "no"
 
 volumes:
   umbraco-media:
