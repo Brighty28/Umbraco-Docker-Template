@@ -1,0 +1,27 @@
+@use '../abstracts' as *;
+
+.hero {
+    background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
+    color: var(--color-white);
+    padding-block: var(--space-3xl);
+    text-align: center;
+
+    @include respond-to('md') {
+        padding-block: 6rem;
+    }
+
+    h1 {
+        color: var(--color-white);
+        margin-bottom: var(--space-md);
+    }
+
+    &__tagline {
+        font-size: var(--font-size-xl);
+        opacity: 0.9;
+        margin-bottom: var(--space-xl);
+    }
+
+    .btn {
+        font-size: var(--font-size-lg);
+    }
+}

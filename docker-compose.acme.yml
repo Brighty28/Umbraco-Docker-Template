@@ -1,0 +1,15 @@
+# ==============================================================================
+# Acme Corp – Docker Compose override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.acme.yml up --build -d
+# ==============================================================================
+
+services:
+  umbraco:
+    build:
+      args:
+        CLIENT_ID: acme
+    environment:
+      - CLIENT_ID=acme
+      - ConnectionStrings__umbracoDbDSN=Server=sql;Database=UmbracoDb_Acme;User Id=sa;Password=${SA_PASSWORD:-Umbraco_Docker_P@ss1};TrustServerCertificate=True
+    ports:
+      - "8081:8080"

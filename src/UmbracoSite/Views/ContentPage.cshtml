@@ -1,0 +1,12 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="section">
+    <div class="container content-page">
+        <h1>@Model.Name</h1>
+        @Html.Raw(Model.Value("bodyText"))
+    </div>
+</section>

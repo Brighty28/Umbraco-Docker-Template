@@ -1,0 +1,39 @@
+@use '../abstracts' as *;
+
+.btn {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-xl);
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-align: center;
+    transition: all var(--transition-fast);
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &--primary {
+        background-color: var(--color-primary);
+        color: var(--color-white);
+
+        &:hover {
+            background-color: var(--color-primary-light);
+            color: var(--color-white);
+        }
+    }
+
+    &--secondary {
+        background-color: transparent;
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+
+        &:hover {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+        }
+    }
+}

@@ -1,0 +1,53 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Microsoft.Extensions.Options
+@inject IOptions<ClientSettings> ClientOptions
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Home";
+    var client = ClientOptions.Value;
+}
+
+<section class="hero">
+    <div class="container">
+        <h1>@client.Name</h1>
+        @if (!string.IsNullOrEmpty(client.TagLine))
+        {
+            <p class="hero__tagline">@client.TagLine</p>
+        }
+        <a href="/about" class="btn btn--primary">Learn More</a>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="grid grid--3">
+            <div class="card">
+                <div class="card__body">
+                    <h3>Feature One</h3>
+                    <p>Describe a key feature or benefit of this site.</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card__body">
+                    <h3>Feature Two</h3>
+                    <p>Highlight another important aspect of your service.</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card__body">
+                    <h3>Feature Three</h3>
+                    <p>Showcase what makes this offering unique.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<feature name="Blog">
+<section class="section section--alt">
+    <div class="container">
+        <h2>Latest Posts</h2>
+        <p>Blog content will appear here once document types are configured in the backoffice.</p>
+    </div>
+</section>
+</feature>

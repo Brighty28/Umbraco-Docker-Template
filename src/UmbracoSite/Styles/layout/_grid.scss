@@ -1,0 +1,35 @@
+@use '../abstracts' as *;
+
+.container {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+}
+
+.section {
+    padding-block: var(--space-3xl);
+}
+
+.section--alt {
+    background-color: var(--color-gray-100);
+}
+
+.grid {
+    display: grid;
+    gap: var(--space-xl);
+
+    &--2 {
+        @include respond-to('md') {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    &--3 {
+        @include respond-to('md') {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        @include respond-to('lg') {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+}

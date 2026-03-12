@@ -10,9 +10,22 @@
     <PackageReference Include="Umbraco.Cms" Version="17.0.0" />
   </ItemGroup>
 
-  <!-- Force a clean publish by removing existing runtimes -->
   <PropertyGroup>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
+
+  <!-- Exclude SCSS source and Node tooling from publish output -->
+  <ItemGroup>
+    <Content Remove="Styles\**" />
+    <Content Remove="build-theme.js" />
+    <Content Remove="package.json" />
+    <Content Remove="package-lock.json" />
+    <None Remove="node_modules\**" />
+  </ItemGroup>
+
+  <!-- Copy client config overlays to output -->
+  <ItemGroup>
+    <Content Include="appsettings.Clients\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

@@ -1,0 +1,13 @@
+// ==============================================================================
+// Main entry point – 7-1 SCSS Architecture
+// Import order matters: abstracts first, then base, vendors, layout, components,
+// pages, and finally themes (so client overrides win via cascade).
+// ==============================================================================
+
+@use 'abstracts';
+@use 'vendors';
+@use 'base';
+@use 'layout';
+@use 'components';
+@use 'pages';
+@use 'themes';

@@ -1,0 +1,28 @@
+@using Microsoft.Extensions.Options
+@inject IOptions<ClientSettings> ClientOptions
+@inject IOptions<FeatureSettings> FeatureOptions
+@{
+    var client = ClientOptions.Value;
+    var features = FeatureOptions.Value;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - @client.Name</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @await Html.PartialAsync("_Header")
+
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    @await Html.PartialAsync("_Footer")
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

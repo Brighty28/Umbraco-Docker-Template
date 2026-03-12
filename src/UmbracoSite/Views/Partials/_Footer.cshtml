@@ -1,0 +1,36 @@
+@using Microsoft.Extensions.Options
+@inject IOptions<ClientSettings> ClientOptions
+@{
+    var client = ClientOptions.Value;
+}
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <img src="@client.LogoPath" alt="@client.Name" class="footer-logo" />
+                @if (!string.IsNullOrEmpty(client.TagLine))
+                {
+                    <p>@client.TagLine</p>
+                }
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                @if (!string.IsNullOrEmpty(client.SupportEmail))
+                {
+                    <p><a href="mailto:@client.SupportEmail">@client.SupportEmail</a></p>
+                }
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; @DateTime.Now.Year @client.Name. All rights reserved.</p>
+        </div>
+    </div>
+</footer>

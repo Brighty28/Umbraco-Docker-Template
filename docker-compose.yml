@@ -2,11 +2,12 @@
 # Docker Compose – Umbraco 17 with SQL Server
 # ==============================================================================
 # Usage:
-#   Start all services:  docker compose up -d
-#   Rebuild Umbraco:     docker compose up --build -d umbraco
-#   View logs:           docker compose logs -f umbraco
-#   Stop all:            docker compose down
-#   Stop + remove data:  docker compose down -v
+#   Default client:     docker compose up -d
+#   Specific client:    CLIENT_ID=acme docker compose up --build -d
+#   With override file: docker compose -f docker-compose.yml -f docker-compose.acme.yml up --build -d
+#   View logs:          docker compose logs -f umbraco
+#   Stop all:           docker compose down
+#   Stop + remove data: docker compose down -v
 # ==============================================================================
 
 services:
@@ -17,11 +18,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        CLIENT_ID: ${CLIENT_ID:-default}
     ports:
       - "${UMBRACO_PORT:-8080}:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ConnectionStrings__umbracoDbDSN=Server=sql;Database=UmbracoDb;User Id=sa;Password=${SA_PASSWORD:-Umbraco_Docker_P@ss1};TrustServerCertificate=True
+      - CLIENT_ID=${CLIENT_ID:-default}
+      - ConnectionStrings__umbracoDbDSN=Server=sql;Database=${UMBRACO_DB:-UmbracoDb};User Id=sa;Password=${SA_PASSWORD:-Umbraco_Docker_P@ss1};TrustServerCertificate=True
       - ConnectionStrings__umbracoDbDSN_ProviderName=Microsoft.Data.SqlClient
     volumes:
       - umbraco-media:/app/wwwroot/media
