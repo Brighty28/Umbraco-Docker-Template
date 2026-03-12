@@ -52,7 +52,7 @@ services:
       - ./docker/sql/init-db.sh:/usr/local/bin/init-db.sh:ro
     entrypoint: /bin/bash -c "/usr/local/bin/init-db.sh & /opt/mssql/bin/sqlservr"
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -d "$${UMBRACO_DB}" -Q "SELECT 1" || exit 1
       interval: 10s
       timeout: 5s
       start_period: 30s
