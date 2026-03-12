@@ -67,10 +67,17 @@ services:
     environment:
       - MSSQL_SA_PASSWORD=${SA_PASSWORD:-Umbraco_Docker_P@ss1}
       - UMBRACO_DB=${UMBRACO_DB:-UmbracoDb}
-      - SQL_HOST=sql
-    volumes:
-      - ./docker/sql/init-db.sh:/usr/local/bin/init-db.sh:ro
-    entrypoint: /bin/bash -c "sed 's/\r$//' /usr/local/bin/init-db.sh | /bin/bash"
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        for i in $$(seq 1 30); do
+          /opt/mssql-tools18/bin/sqlcmd -S sql -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$$UMBRACO_DB') CREATE DATABASE [$$UMBRACO_DB];" && echo "Database $$UMBRACO_DB is ready." && exit 0
+          echo "Attempt $$i failed, retrying in 3s..."
+          sleep 3
+        done
+        echo "ERROR: Could not create database." >&2
+        exit 1
     restart: "no"
 
 volumes:
