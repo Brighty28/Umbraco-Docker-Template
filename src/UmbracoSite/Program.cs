@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using UmbracoSite.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,11 @@ builder.Services.Configure<FeatureSettings>(
     builder.Configuration.GetSection(FeatureSettings.SectionName));
 builder.Services.Configure<ClientSettings>(
     builder.Configuration.GetSection(ClientSettings.SectionName));
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
