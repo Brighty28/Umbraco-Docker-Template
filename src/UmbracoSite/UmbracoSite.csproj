@@ -23,9 +23,9 @@
     <None Remove="node_modules\**" />
   </ItemGroup>
 
-  <!-- Copy client config overlays to output -->
+  <!-- Ensure client config overlays are copied to output -->
   <ItemGroup>
-    <Content Include="appsettings.Clients\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="appsettings.Clients\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

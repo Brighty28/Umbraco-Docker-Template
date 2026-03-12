@@ -42,7 +42,7 @@ A production-ready, per-client configurable [Umbraco 17](https://umbraco.com/) C
 │                                                      │
 │  ┌────────────────────┐   ┌───────────────────────┐ │
 │  │   Umbraco 17       │   │   SQL Server 2022     │ │
-│  │   (.NET 9)         │──▶│   (Linux)             │ │
+│  │   (.NET 10)        │──▶│   (Linux)             │ │
 │  │   + Razor Views    │   │   Separate DB per     │ │
 │  │   + SCSS Themes    │   │   client              │ │
 │  │   Port: 8080       │   │   Port: 1433          │ │
@@ -62,11 +62,11 @@ A production-ready, per-client configurable [Umbraco 17](https://umbraco.com/) C
 │  Stage 1: Node.js (Alpine)                           │
 │  Compile SCSS → CSS with CLIENT_ID theme overrides   │
 ├─────────────────────────────────────────────────────┤
-│  Stage 2: .NET 9 SDK                                 │
+│  Stage 2: .NET 10 SDK                                 │
 │  Restore, build & publish Umbraco project            │
 │  Copy compiled CSS from Stage 1                      │
 ├─────────────────────────────────────────────────────┤
-│  Stage 3: ASP.NET 9 Runtime                          │
+│  Stage 3: ASP.NET 10 Runtime                          │
 │  Lightweight production image                        │
 └─────────────────────────────────────────────────────┘
 ```
@@ -82,7 +82,7 @@ Umbraco-Docker-Template/
 ├── .env.example                    # Environment variable template
 │
 └── src/UmbracoSite/
-    ├── UmbracoSite.csproj          # .NET 9 + Umbraco 17
+    ├── UmbracoSite.csproj          # .NET 10 + Umbraco 17
     ├── Program.cs                  # Bootstrap with client config loading
     ├── appsettings.json            # Base config (features, client defaults)
     ├── appsettings.Development.json
@@ -322,7 +322,7 @@ az webapp config appsettings set \
 ## Tech Stack
 
 - **Umbraco 17** – Open-source .NET CMS
-- **.NET 9** – Runtime and SDK
+- **.NET 10** – Runtime and SDK
 - **Razor Views** – Traditional server-rendered templates
 - **SQL Server 2022** – Database (Linux container, Azure SQL in production)
 - **7-1 SCSS** – Maintainable stylesheet architecture
