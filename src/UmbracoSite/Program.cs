@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using UmbracoSite.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,13 @@ builder.CreateUmbracoBuilder()
 WebApplication app = builder.Build();
 
 await app.BootUmbracoAsync();
+
+// Trust forwarded headers from Docker / reverse proxies so OpenIddict
+// sees the correct scheme and host during OAuth token exchange.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseUmbraco()
     .WithMiddleware(u =>
