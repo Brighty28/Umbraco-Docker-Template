@@ -24,7 +24,7 @@ RUN mkdir -p wwwroot/css && node build-theme.js
 # ------------------------------------------------------------------------------
 # Stage 2: Build – restore, build, and publish the Umbraco project
 # ------------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src
 
@@ -49,7 +49,7 @@ COPY src/UmbracoSite/appsettings.Clients/ /app/publish/appsettings.Clients/
 # ------------------------------------------------------------------------------
 # Stage 3: Production – lightweight ASP.NET runtime
 # ------------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS production
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS production
 
 WORKDIR /app
 
