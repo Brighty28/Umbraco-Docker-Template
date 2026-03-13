@@ -21,17 +21,23 @@ builder.Services.Configure<FeatureSettings>(
 builder.Services.Configure<ClientSettings>(
     builder.Configuration.GetSection(ClientSettings.SectionName));
 
-// Allow auth cookies to work over HTTP in Docker development.
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-});
-
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
     .AddComposers()
     .Build();
+
+// Override cookie Secure flag AFTER Umbraco registers its own cookie config.
+// Umbraco's AddBackOffice() sets Secure=Always which breaks HTTP auth flow.
+builder.Services.PostConfigure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
+    Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme,
+    options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest);
+builder.Services.PostConfigure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
+    Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme,
+    options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest);
+builder.Services.PostConfigure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
+    Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorUserIdScheme,
+    options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest);
 
 WebApplication app = builder.Build();
 
@@ -46,6 +52,14 @@ var forwardedHeaderOptions = new ForwardedHeadersOptions
 forwardedHeaderOptions.KnownNetworks.Clear();
 forwardedHeaderOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeaderOptions);
+
+// Force all cookies to respect the request scheme (HTTP or HTTPS).
+// This overrides at the middleware level, so even if Umbraco sets
+// Secure=Always on its auth cookies, they'll work over plain HTTP.
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    Secure = CookieSecurePolicy.SameAsRequest
+});
 
 app.UseUmbraco()
     .WithMiddleware(u =>
