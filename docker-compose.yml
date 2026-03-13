@@ -8,6 +8,9 @@
 #   View logs:          docker compose logs -f umbraco
 #   Stop all:           docker compose down
 #   Stop + remove data: docker compose down -v
+#
+# Access the site at: https://localhost:8443
+# Backoffice login:   https://localhost:8443/umbraco
 # ==============================================================================
 
 services:
@@ -21,7 +24,8 @@ services:
       args:
         CLIENT_ID: ${CLIENT_ID:-default}
     ports:
-      - "${UMBRACO_PORT:-8080}:8080"
+      - "${UMBRACO_HTTP_PORT:-8080}:8080"
+      - "${UMBRACO_HTTPS_PORT:-8443}:8443"
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - CLIENT_ID=${CLIENT_ID:-default}

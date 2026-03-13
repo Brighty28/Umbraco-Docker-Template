@@ -1,8 +1,22 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpOverrides;
+using System.Security.Cryptography.X509Certificates;
 using UmbracoSite.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel with HTTPS using self-signed cert generated in Docker build
+var certPath = Path.Combine(builder.Environment.ContentRootPath, "devcert.crt");
+var keyPath = Path.Combine(builder.Environment.ContentRootPath, "devcert.key");
+if (File.Exists(certPath) && File.Exists(keyPath))
+{
+    builder.WebHost.ConfigureKestrel(kestrel =>
+    {
+        kestrel.ListenAnyIP(8080);
+        kestrel.ListenAnyIP(8443, opts =>
+        {
+            opts.UseHttps(X509Certificate2.CreateFromPemFile(certPath, keyPath));
+        });
+    });
+}
 
 // Load client-specific configuration overlay if CLIENT_ID is set
 string clientId = builder.Configuration["Client:Id"]
@@ -27,39 +41,9 @@ builder.CreateUmbracoBuilder()
     .AddComposers()
     .Build();
 
-// Override cookie Secure flag AFTER Umbraco registers its own cookie config.
-// Umbraco's AddBackOffice() sets Secure=Always which breaks HTTP auth flow.
-builder.Services.PostConfigure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
-    Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme,
-    options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest);
-builder.Services.PostConfigure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
-    Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme,
-    options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest);
-builder.Services.PostConfigure<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions>(
-    Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorUserIdScheme,
-    options => options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest);
-
 WebApplication app = builder.Build();
 
 await app.BootUmbracoAsync();
-
-// Trust forwarded headers from Docker / reverse proxies so OpenIddict
-// sees the correct scheme and host during OAuth token exchange.
-var forwardedHeaderOptions = new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-};
-forwardedHeaderOptions.KnownNetworks.Clear();
-forwardedHeaderOptions.KnownProxies.Clear();
-app.UseForwardedHeaders(forwardedHeaderOptions);
-
-// Force all cookies to respect the request scheme (HTTP or HTTPS).
-// This overrides at the middleware level, so even if Umbraco sets
-// Secure=Always on its auth cookies, they'll work over plain HTTP.
-app.UseCookiePolicy(new CookiePolicyOptions
-{
-    Secure = CookieSecurePolicy.SameAsRequest
-});
 
 app.UseUmbraco()
     .WithMiddleware(u =>
