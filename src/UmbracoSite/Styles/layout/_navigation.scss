@@ -18,6 +18,10 @@
         display: none;
     }
 
+    &:focus-visible {
+        @include focus-ring;
+    }
+
     &__bar {
         display: block;
         width: 24px;
@@ -60,6 +64,10 @@
 
         &:hover {
             color: var(--color-primary);
+        }
+
+        &:focus-visible {
+            @include focus-ring;
         }
     }
 }

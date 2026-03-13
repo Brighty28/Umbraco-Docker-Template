@@ -50,3 +50,33 @@ a {
 ul, ol {
     list-style: none;
 }
+
+// Respect user preference for reduced motion
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+// Skip-to-content link – visible only on keyboard focus
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--space-md);
+    z-index: 200;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-primary);
+    color: var(--color-white);
+    font-weight: var(--font-weight-medium);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    text-decoration: none;
+
+    &:focus {
+        top: 0;
+    }
+}

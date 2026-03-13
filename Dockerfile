@@ -58,14 +58,14 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends libicu-dev curl openssl && \
     rm -rf /var/lib/apt/lists/*
 
-# Generate a self-signed certificate for HTTPS
+# Copy published output
+COPY --from=build /app/publish .
+
+# Generate a self-signed certificate for HTTPS (after COPY so it isn't overwritten)
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /app/devcert.key -out /app/devcert.crt \
     -subj "/CN=localhost" \
     -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
-
-# Copy published output
-COPY --from=build /app/publish .
 
 # Umbraco stores media and logs in these directories
 VOLUME ["/app/umbraco/Data", "/app/umbraco/Logs", "/app/wwwroot/media"]
