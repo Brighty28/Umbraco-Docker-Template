@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using UmbracoSite.Configuration;
 
@@ -19,6 +20,12 @@ builder.Services.Configure<FeatureSettings>(
     builder.Configuration.GetSection(FeatureSettings.SectionName));
 builder.Services.Configure<ClientSettings>(
     builder.Configuration.GetSection(ClientSettings.SectionName));
+
+// Allow auth cookies to work over HTTP in Docker development.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
