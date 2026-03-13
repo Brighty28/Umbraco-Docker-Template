@@ -12,18 +12,18 @@
         <h1>Contact Us</h1>
 
         <feature name="ContactForm">
-        <form class="form" method="post" action="/umbraco/surface/contact/submit">
+        <form class="form" method="post" action="/umbraco/surface/contact/submit" novalidate>
             <div class="form__group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required class="form__input" />
+                <label for="name">Name <span aria-hidden="true">*</span></label>
+                <input type="text" id="name" name="name" required aria-required="true" autocomplete="name" class="form__input" />
             </div>
             <div class="form__group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required class="form__input" />
+                <label for="email">Email <span aria-hidden="true">*</span></label>
+                <input type="email" id="email" name="email" required aria-required="true" autocomplete="email" class="form__input" />
             </div>
             <div class="form__group">
-                <label for="message">Message</label>
-                <textarea id="message" name="message" rows="5" required class="form__input"></textarea>
+                <label for="message">Message <span aria-hidden="true">*</span></label>
+                <textarea id="message" name="message" rows="5" required aria-required="true" class="form__input"></textarea>
             </div>
             <button type="submit" class="btn btn--primary">Send Message</button>
         </form>

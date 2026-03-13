@@ -3,11 +3,6 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     overflow: hidden;
-    transition: box-shadow var(--transition-base);
-
-    &:hover {
-        box-shadow: var(--shadow-lg);
-    }
 
     &__image {
         width: 100%;
