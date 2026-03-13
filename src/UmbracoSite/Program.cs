@@ -32,10 +32,13 @@ await app.BootUmbracoAsync();
 
 // Trust forwarded headers from Docker / reverse proxies so OpenIddict
 // sees the correct scheme and host during OAuth token exchange.
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var forwardedHeaderOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+forwardedHeaderOptions.KnownNetworks.Clear();
+forwardedHeaderOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeaderOptions);
 
 app.UseUmbraco()
     .WithMiddleware(u =>
