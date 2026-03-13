@@ -1,4 +1,4 @@
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<BlogPost>
 @{
     Layout = "_Layout";
     ViewData["Title"] = Model.Name;
@@ -13,7 +13,7 @@
             </time>
         </header>
         <div class="blog-post__body">
-            @Html.Raw(Model.Value("bodyText"))
+            @await Html.GetBlockGridHtmlAsync(Model.BodyText)
         </div>
     </div>
 </article>

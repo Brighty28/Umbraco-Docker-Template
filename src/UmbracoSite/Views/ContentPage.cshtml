@@ -1,4 +1,4 @@
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentPage>
 @{
     Layout = "_Layout";
     ViewData["Title"] = Model.Name;
@@ -7,6 +7,6 @@
 <section class="section">
     <div class="container content-page">
         <h1>@Model.Name</h1>
-        @Html.Raw(Model.Value("bodyText"))
+        @await Html.GetBlockGridHtmlAsync(Model.BodyText)
     </div>
 </section>

@@ -1,54 +1,37 @@
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
-@using Microsoft.Extensions.Options
-@inject IOptions<ClientSettings> ClientOptions
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Home>
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Home";
-    var client = ClientOptions.Value;
+    ViewData["Title"] = Model.Name;
+    var backgroundImage = Model.HeroBackgroundImage != null ? Model.HeroBackgroundImage.Url() : string.Empty;
 }
 
-<section class="hero">
-    <div class="container">
-        <h1>@client.Name</h1>
-        @if (!string.IsNullOrEmpty(client.TagLine))
+<section class="hero hero--full-height overlay overlay--dark"
+         style="@(string.IsNullOrEmpty(backgroundImage) ? "" : $"background-image: url('{backgroundImage}')")">
+    <div class="container hero__content">
+        <h1>@Model.HeroHeader</h1>
+        <p class="hero__description">@Model.HeroDescription</p>
+        @if (Model.HeroCtalink != null)
         {
-            <p class="hero__tagline">@client.TagLine</p>
+            <a class="btn btn--outline-light" href="@Model.HeroCtalink.Url()">
+                @Model.HeroCtacaption
+            </a>
         }
-        <a href="/about" class="btn btn--primary">Learn More</a>
     </div>
 </section>
 
-<section class="section" aria-labelledby="features-heading">
-    <div class="container">
-        <h2 id="features-heading" class="sr-only">Key Features</h2>
-        <div class="grid grid--3">
-            <div class="card">
-                <div class="card__body">
-                    <h3>Feature One</h3>
-                    <p>Describe a key feature or benefit of this site.</p>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card__body">
-                    <h3>Feature Two</h3>
-                    <p>Highlight another important aspect of your service.</p>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card__body">
-                    <h3>Feature Three</h3>
-                    <p>Showcase what makes this offering unique.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<section class="section">
+    @await Html.GetBlockGridHtmlAsync(Model.BodyText)
 </section>
 
-<feature name="Blog">
-<section class="section section--alt">
-    <div class="container">
-        <h2>Latest Posts</h2>
-        <p>Blog content will appear here once document types are configured in the backoffice.</p>
+@if (Model.FooterCtalink != null)
+{
+<section class="section section--themed">
+    <div class="container text-center">
+        <h2>@Model.FooterHeader</h2>
+        <p class="hero__description mw-prose">@Model.FooterDescription</p>
+        <a class="btn btn--outline-light" href="@Model.FooterCtalink.Url()">
+            @Model.FooterCtacaption
+        </a>
     </div>
 </section>
-</feature>
+}
