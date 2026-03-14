@@ -12,7 +12,7 @@
         <p class="hero__description">@Model.HeroDescription</p>
         @if (Model.HeroCtalink != null)
         {
-            <a class="btn btn--outline-light" href="@Model.HeroCtalink.Url()">
+            <a class="btn btn--outline-light" href="@Model.HeroCtalink.Url">
                 @Model.HeroCtacaption
             </a>
         }
@@ -29,7 +29,7 @@
     <div class="container text-center">
         <h2>@Model.FooterHeader</h2>
         <p class="hero__description mw-prose">@Model.FooterDescription</p>
-        <a class="btn btn--outline-light" href="@Model.FooterCtalink.Url()">
+        <a class="btn btn--outline-light" href="@Model.FooterCtalink.Url">
             @Model.FooterCtacaption
         </a>
     </div>
