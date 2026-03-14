@@ -1,0 +1,11 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Extensions
+
+@if (Model.Areas.Any())
+{
+    foreach (var area in Model.Areas)
+    {
+        @await Html.GetBlockGridItemAreaHtmlAsync(area)
+    }
+}

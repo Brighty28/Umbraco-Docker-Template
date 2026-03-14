@@ -1,0 +1,8 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IEnumerable<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>>
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Extensions
+
+@foreach (var item in Model)
+{
+    @await Html.GetBlockGridItemHtmlAsync(item)
+}
