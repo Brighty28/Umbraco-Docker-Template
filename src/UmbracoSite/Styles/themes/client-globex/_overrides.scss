@@ -1,0 +1,15 @@
+// ==============================================================================
+// Globex Corporation – Brand theme overrides
+// Override CSS custom properties to rebrand the entire site.
+// ==============================================================================
+
+:root {
+    --color-primary: #059669;
+    --color-primary-light: #34d399;
+    --color-primary-dark: #064e3b;
+    --color-accent: #6366f1;
+
+    --font-heading: 'Nunito', sans-serif;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+}

@@ -1,0 +1,18 @@
+.blog-post {
+    &__header {
+        margin-bottom: var(--space-2xl);
+    }
+
+    &__header time {
+        font-size: var(--font-size-sm);
+        color: var(--color-gray-500);
+    }
+
+    &__body {
+        max-width: 720px;
+
+        p {
+            margin-bottom: var(--space-lg);
+        }
+    }
+}

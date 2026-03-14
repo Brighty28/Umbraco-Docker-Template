@@ -1,0 +1,14 @@
+// ==============================================================================
+// Acme Corp – Brand theme overrides
+// Override CSS custom properties to rebrand the entire site.
+// ==============================================================================
+
+:root {
+    --color-primary: #e11d48;
+    --color-primary-light: #fb7185;
+    --color-primary-dark: #9f1239;
+    --color-accent: #f59e0b;
+
+    --font-heading: 'Oswald', sans-serif;
+    --radius-md: 4px;
+}

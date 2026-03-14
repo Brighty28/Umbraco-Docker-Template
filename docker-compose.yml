@@ -1,71 +1,90 @@
 # ==============================================================================
-# Docker Compose – local development & multi-client builds
+# Docker Compose – Umbraco 17 with SQL Server
 # ==============================================================================
 # Usage:
-#   Development:  docker compose up dev
-#   Client build: CLIENT_ID=acme docker compose up --build client-site
-#   All clients:  docker compose --profile all up --build
+#   Default client:     docker compose up -d
+#   Specific client:    CLIENT_ID=acme docker compose up --build -d
+#   With override file: docker compose -f docker-compose.yml -f docker-compose.acme.yml up --build -d
+#   View logs:          docker compose logs -f umbraco
+#   Stop all:           docker compose down
+#   Stop + remove data: docker compose down -v
+#
+# Access the site at: https://localhost:8443
+# Backoffice login:   https://localhost:8443/umbraco
 # ==============================================================================
 
 services:
   # ---------------------------------------------------------------------------
-  # Development server with hot-reload
+  # Umbraco 17 CMS
   # ---------------------------------------------------------------------------
-  dev:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.dev
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./src:/app/src:ro
-      - ./config:/app/config:ro
-    environment:
-      - CLIENT_ID=${CLIENT_ID:-default}
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-
-  # ---------------------------------------------------------------------------
-  # Production build for a specific client
-  # ---------------------------------------------------------------------------
-  client-site:
+  umbraco:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         CLIENT_ID: ${CLIENT_ID:-default}
-        ENVIRONMENT: ${ENVIRONMENT:-production}
     ports:
-      - "${PORT:-8080}:80"
+      - "${UMBRACO_HTTP_PORT:-8080}:8080"
+      - "${UMBRACO_HTTPS_PORT:-8443}:8443"
     environment:
-      # Runtime overrides (injected via entrypoint)
-      - SITE_TITLE=${SITE_TITLE:-}
-      - ANALYTICS_ID=${ANALYTICS_ID:-}
-      - API_BASE_URL=${API_BASE_URL:-}
-      - FEATURE_FLAGS=${FEATURE_FLAGS:-}
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - CLIENT_ID=${CLIENT_ID:-default}
+      - ConnectionStrings__umbracoDbDSN=Server=sql;Database=${UMBRACO_DB:-UmbracoDb};User Id=sa;Password=${SA_PASSWORD:-Umbraco_Docker_P@ss1};TrustServerCertificate=True
+      - ConnectionStrings__umbracoDbDSN_ProviderName=Microsoft.Data.SqlClient
+    volumes:
+      - umbraco-media:/app/wwwroot/media
+      - umbraco-logs:/app/umbraco/Logs
+    depends_on:
+      sql-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
-  # Example: named client profiles for CI/CD
+  # SQL Server 2022 (Linux)
   # ---------------------------------------------------------------------------
-  client-acme:
-    extends:
-      service: client-site
-    build:
-      args:
-        CLIENT_ID: acme
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD:-Umbraco_Docker_P@ss1}
+      - MSSQL_PID=Developer
     ports:
-      - "8081:80"
-    profiles:
-      - all
+      - "${SQL_PORT:-1433}:1433"
+    volumes:
+      - sql-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    restart: unless-stopped
 
-  client-globex:
-    extends:
-      service: client-site
-    build:
-      args:
-        CLIENT_ID: globex
-    ports:
-      - "8082:80"
-    profiles:
-      - all
+  # ---------------------------------------------------------------------------
+  # One-shot init: waits for SQL Server, creates the database, then exits
+  # ---------------------------------------------------------------------------
+  sql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sql:
+        condition: service_healthy
+    environment:
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD:-Umbraco_Docker_P@ss1}
+      - UMBRACO_DB=${UMBRACO_DB:-UmbracoDb}
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        for i in $$(seq 1 30); do
+          /opt/mssql-tools18/bin/sqlcmd -S sql -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'$$UMBRACO_DB') CREATE DATABASE [$$UMBRACO_DB];" && echo "Database $$UMBRACO_DB is ready." && exit 0
+          echo "Attempt $$i failed, retrying in 3s..."
+          sleep 3
+        done
+        echo "ERROR: Could not create database." >&2
+        exit 1
+    restart: "no"
+
+volumes:
+  umbraco-media:
+  umbraco-logs:
+  sql-data:

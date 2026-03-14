@@ -1,0 +1,33 @@
+@using Microsoft.Extensions.Options
+@inject IOptions<ClientSettings> ClientOptions
+@inject IOptions<FeatureSettings> FeatureOptions
+@{
+    var client = ClientOptions.Value;
+    var features = FeatureOptions.Value;
+}
+<header class="site-header">
+    <div class="container">
+        <a href="/" class="site-logo">
+            <img src="@client.LogoPath" alt="@client.Name" />
+        </a>
+
+        <nav class="site-nav" aria-label="Main navigation">
+            <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu">
+                <span class="sr-only">Menu</span>
+                <span class="nav-toggle__bar"></span>
+                <span class="nav-toggle__bar"></span>
+                <span class="nav-toggle__bar"></span>
+            </button>
+            <ul id="nav-menu" class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <feature name="Blog">
+                    <li><a href="/blog">Blog</a></li>
+                </feature>
+                <feature name="ContactForm">
+                    <li><a href="/contact">Contact</a></li>
+                </feature>
+            </ul>
+        </nav>
+    </div>
+</header>
