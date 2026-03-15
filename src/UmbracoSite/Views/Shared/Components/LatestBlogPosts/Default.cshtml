@@ -1,0 +1,22 @@
+@model IEnumerable<Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent>
+
+@if (Model.Any())
+{
+    <div class="latest-blog-posts">
+        <div class="container">
+            <div class="latest-blog-posts__grid">
+                @foreach (var post in Model)
+                {
+                    <article class="latest-blog-posts__item">
+                        <a href="@post.Url()">
+                            <h3>@post.Name</h3>
+                            <time datetime="@post.CreateDate.ToString("yyyy-MM-dd")">
+                                @post.CreateDate.ToString("d MMMM yyyy")
+                            </time>
+                        </a>
+                    </article>
+                }
+            </div>
+        </div>
+    </div>
+}

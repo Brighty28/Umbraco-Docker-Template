@@ -34,3 +34,9 @@ Thumbs.db
 
 ## Docker volumes
 sql-data/
+
+## Certificates (keep .gitkeep, ignore actual cert files)
+certs/*.pfx
+certs/*.pem
+certs/*.crt
+certs/*.key

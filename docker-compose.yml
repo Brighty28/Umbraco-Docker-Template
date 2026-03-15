@@ -34,7 +34,7 @@ services:
     volumes:
       - umbraco-media:/app/wwwroot/media
       - umbraco-logs:/app/umbraco/Logs
-      - umbraco-certs:/app/certs
+      - ./certs:/app/certs
     depends_on:
       sql-init:
         condition: service_completed_successfully
@@ -88,5 +88,4 @@ services:
 volumes:
   umbraco-media:
   umbraco-logs:
-  umbraco-certs:
   sql-data:
