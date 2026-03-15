@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using UmbracoSite.Configuration;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,12 @@ if (File.Exists(pfxPath))
         });
     });
 }
+
+// Persist Data Protection keys so tokens survive container restarts
+var dpKeysPath = Path.Combine(builder.Environment.ContentRootPath, "umbraco", "DataProtection");
+Directory.CreateDirectory(dpKeysPath);
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dpKeysPath));
 
 // Load client-specific configuration overlay if CLIENT_ID is set
 string clientId = builder.Configuration["Client:Id"]

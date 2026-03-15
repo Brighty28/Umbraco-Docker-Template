@@ -34,6 +34,7 @@ services:
     volumes:
       - umbraco-media:/app/wwwroot/media
       - umbraco-logs:/app/umbraco/Logs
+      - umbraco-dp-keys:/app/umbraco/DataProtection
       - ./certs:/app/certs
     depends_on:
       sql-init:
@@ -88,4 +89,5 @@ services:
 volumes:
   umbraco-media:
   umbraco-logs:
+  umbraco-dp-keys:
   sql-data:
