@@ -1,178 +1,389 @@
-# Umbraco-Docker-Template
-# Website Package – Configurable Docker Container
+# Umbraco 17 Docker Template
 
-A production-ready, per-client configurable website packaged as a Docker container, designed for deployment on Azure App Services. Uses the **7-1 SCSS architecture** for maintainable, themeable stylesheets.
+A production-ready, per-client configurable [Umbraco 17](https://umbraco.com/) CMS template packaged as Docker containers. Features traditional **Razor views**, **7-1 SCSS architecture** for maintainable theming, **feature toggles**, and **per-client brand overrides** — designed for deployment on Azure App Services.
 
 ---
 
-## Architecture Overview
+## Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose plugin)
+- At least 4 GB RAM allocated to Docker (SQL Server requirement)
+
+## Quick Start
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/Brighty28/Umbraco-Docker-Template.git
+   cd Umbraco-Docker-Template
+   ```
+
+2. **Start the containers**
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. **Open the Umbraco backoffice**
+
+   Navigate to [https://localhost:8443/umbraco](https://localhost:8443/umbraco).
+
+   Your browser will show a certificate warning for the self-signed dev cert — click **Advanced** then **Proceed** to continue. This is expected for local development.
+
+4. **Log in**
+
+   The unattended install creates a default admin account:
+   - **Email:** admin@example.com
+   - **Password:** Admin1234!
+
+   Change these credentials immediately after first login.
+
+---
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Docker Image (per client)                 │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │ Nginx (Alpine)                                         │ │
-│  │  ├── /css/main.css      ← compiled from 7-1 SCSS      │ │
-│  │  ├── /js/app.js         ← bundled + minified           │ │
-│  │  ├── /js/runtime-config ← env vars injected at start   │ │
-│  │  ├── /index.html        ← rendered from Mustache tpl   │ │
-│  │  └── /assets/           ← images, fonts, client logos  │ │
-│  └────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-         ▲                                    ▲
-    Build-time config                   Runtime config
-    (CLIENT_ID arg)                   (env vars on start)
+┌──────────────────────────────────────────────────────────┐
+│                  Docker Compose Network                   │
+│                                                           │
+│  ┌──────────────────────┐   ┌──────────────────────────┐ │
+│  │   Umbraco 17         │   │   SQL Server 2022        │ │
+│  │   (.NET 10)          │──▶│   (Linux)                │ │
+│  │   + Razor Views      │   │   Separate DB per client │ │
+│  │   + SCSS Themes      │   │                          │ │
+│  │   HTTPS: 8443        │   │   Port: 1433             │ │
+│  │   HTTP:  8080        │   │                          │ │
+│  └──────────────────────┘   └──────────────────────────┘ │
+│         │                            │                    │
+│    ┌────┴────┐                  ┌────┴────┐               │
+│    │  Media  │                  │ SQL Data│               │
+│    │ Volume  │                  │ Volume  │               │
+│    └─────────┘                  └─────────┘               │
+└──────────────────────────────────────────────────────────┘
 ```
 
-## Configuration Layers
+### Multi-stage Docker Build
 
-The system uses three layers of configuration, each overriding the previous:
+```
+┌─────────────────────────────────────────────────────┐
+│  Stage 1: Node.js (Alpine)                           │
+│  Compile SCSS → CSS with CLIENT_ID theme overrides   │
+├─────────────────────────────────────────────────────┤
+│  Stage 2: .NET 10 SDK                                │
+│  Restore, build & publish Umbraco project            │
+│  Copy compiled CSS from Stage 1                      │
+├─────────────────────────────────────────────────────┤
+│  Stage 3: ASP.NET 10 Runtime                         │
+│  Lightweight production image + self-signed TLS cert │
+└─────────────────────────────────────────────────────┘
+```
 
-| Layer | When | What | Example |
-|-------|------|------|---------|
-| **Base defaults** | Always loaded | `config/default.json` | Default nav, features, SEO |
-| **Client overrides** | Build time (`--build-arg CLIENT_ID=acme`) | `config/clients/acme.json` | Brand name, colours, content |
-| **Runtime env vars** | Container start | `docker run -e API_BASE_URL=...` | API URLs, analytics IDs, feature flags |
+### HTTPS by Default
+
+The container generates a self-signed TLS certificate at build time and serves HTTPS on port 8443. This mirrors production environments (Azure App Service, etc.) where HTTPS is standard and avoids OAuth/cookie issues that occur over plain HTTP.
+
+| Port | Protocol | Use |
+|------|----------|-----|
+| 8443 | HTTPS | Primary access (backoffice and frontend) |
+| 8080 | HTTP | Available but not recommended for backoffice login |
+
+For production, replace the self-signed cert with a real certificate via Azure App Service, a reverse proxy, or by mounting your own cert files.
+
+## Project Structure
+
+```
+Umbraco-Docker-Template/
+├── Dockerfile                      # 3-stage build (Node → SDK → Runtime)
+├── docker-compose.yml              # Base services (Umbraco + SQL Server)
+├── docker-compose.acme.yml         # Acme client override
+├── docker-compose.globex.yml       # Globex client override
+├── .env.example                    # Environment variable template
+│
+└── src/UmbracoSite/
+    ├── UmbracoSite.csproj          # .NET 10 + Umbraco 17
+    ├── Program.cs                  # Bootstrap with client config loading
+    ├── appsettings.json            # Base config (features, client defaults)
+    ├── appsettings.Development.json
+    │
+    ├── appsettings.Clients/        # Per-client config overlays
+    │   ├── appsettings.acme.json
+    │   └── appsettings.globex.json
+    │
+    ├── Configuration/              # Strongly-typed settings
+    │   ├── ClientSettings.cs
+    │   └── FeatureSettings.cs
+    │
+    ├── TagHelpers/
+    │   └── FeatureTagHelper.cs     # <feature name="Blog">...</feature>
+    │
+    ├── Views/
+    │   ├── _Layout.cshtml          # Master layout (skip link, landmarks)
+    │   ├── _ViewImports.cshtml
+    │   ├── _ViewStart.cshtml
+    │   ├── Home.cshtml             # Home page template
+    │   ├── ContentPage.cshtml      # Generic content page
+    │   ├── Contact.cshtml          # Contact page with feature-toggled form
+    │   ├── BlogPost.cshtml         # Blog post template
+    │   └── Partials/
+    │       ├── _Header.cshtml      # Sticky header + nav with ARIA attributes
+    │       └── _Footer.cshtml      # Footer with nav landmark
+    │
+    ├── Styles/                     # 7-1 SCSS Architecture
+    │   ├── main.scss               # Entry point
+    │   ├── abstracts/              # Variables, mixins (no CSS output)
+    │   ├── base/                   # Reset, typography, skip link
+    │   ├── layout/                 # Grid, header, footer, navigation
+    │   ├── components/             # Buttons, cards, forms, hero
+    │   ├── pages/                  # Home, contact, blog page styles
+    │   ├── vendors/                # Third-party CSS
+    │   └── themes/                 # Client brand overrides
+    │       ├── _default.scss
+    │       ├── client-acme/
+    │       └── client-globex/
+    │
+    ├── build-theme.js              # SCSS build script (client-aware)
+    ├── package.json                # Node deps (sass)
+    │
+    └── wwwroot/
+        ├── css/                    # Compiled CSS output
+        ├── js/site.js              # Mobile nav toggle with keyboard support
+        └── images/
+            ├── logo.svg            # Default logo
+            └── clients/            # Per-client logos
+```
+
+## Per-Client Configuration
+
+Each client gets their own:
+- **Umbraco backoffice** — separate database, separate content
+- **Brand theme** — colours, fonts, border-radius via CSS custom properties
+- **Feature toggles** — blog on/off, contact form, search
+- **Logo and assets** — per-client image directory
+
+### Configuration Layers
+
+| Layer | When | Source | What changes |
+|-------|------|--------|-------------|
+| **Base defaults** | Always | `appsettings.json` | Default features, client name |
+| **Client overlay** | Build/run time | `appsettings.Clients/appsettings.{clientId}.json` | Brand name, features, email |
+| **Theme overrides** | Build time | `Styles/themes/client-{clientId}/` | Colours, fonts, shapes |
+| **Environment vars** | Run time | `docker compose` / App Service | DB connection, ports |
+
+### Deploy a Client
+
+```bash
+# Using environment variable
+CLIENT_ID=acme docker compose up --build -d
+
+# Using compose override file (recommended for CI/CD)
+docker compose -f docker-compose.yml -f docker-compose.acme.yml up --build -d
+```
+
+### Add a New Client
+
+1. Create a config overlay: `appsettings.Clients/appsettings.newcorp.json`
+2. Create a theme: `Styles/themes/client-newcorp/_overrides.scss`
+3. Add logo: `wwwroot/images/clients/newcorp/logo.svg`
+4. Optionally add a compose override: `docker-compose.newcorp.yml`
 
 ## 7-1 SCSS Architecture
 
 ```
-src/scss/
+Styles/
 ├── abstracts/          # No CSS output – design tokens only
-│   ├── _variables.scss    # Colour palette, typography scale, spacing, breakpoints
-│   ├── _mixins.scss       # respond-to(), flex-center(), focus-ring(), etc.
-│   ├── _functions.scss    # rem(), fluid(), tint(), shade(), z()
-│   └── _placeholders.scss # %reset-list, %clearfix, etc.
-│
+│   ├── _variables.scss    # CSS custom properties on :root
+│   └── _mixins.scss       # respond-to(), flex-center(), focus-ring()
 ├── base/               # Global element styles
-│   ├── _reset.scss        # Box model + CSS custom properties on :root
-│   ├── _typography.scss   # Headings, body text, fluid type scale
-│   ├── _animations.scss   # @keyframes: fade-in, slide-up, scale-in
-│   └── _utilities.scss    # .sr-only, .text-center, .mx-auto, etc.
-│
+│   ├── _reset.scss        # Box model reset, reduced-motion, skip link
+│   └── _typography.scss   # Headings, body text, .sr-only
 ├── layout/             # Structural page sections
-│   ├── _grid.scss         # .container, .grid--2/3/4, .section
+│   ├── _grid.scss         # .container, .grid--2/3, .section
 │   ├── _header.scss       # Sticky header with backdrop blur
 │   ├── _footer.scss       # Multi-column footer grid
-│   ├── _sidebar.scss      # Sticky sidebar layout
 │   └── _navigation.scss   # Desktop nav + mobile hamburger menu
-│
 ├── components/         # Reusable UI blocks
-│   ├── _buttons.scss      # .btn variants (primary, secondary, ghost, sizes)
-│   ├── _cards.scss        # .card with image, body, footer, elevated variant
-│   ├── _forms.scss        # Inputs, textareas, labels, validation states
-│   ├── _modal.scss        # Overlay + centred modal with animations
-│   ├── _hero.scss         # Full-width hero with gradient background
-│   └── _alerts.scss       # Info, success, warning, error alerts
-│
+│   ├── _buttons.scss      # .btn variants (primary, secondary)
+│   ├── _cards.scss        # .card with body, image, hover shadow
+│   ├── _forms.scss        # Inputs, labels, focus-visible styles
+│   └── _hero.scss         # Full-width hero with gradient
 ├── pages/              # Page-specific styles
 │   ├── _home.scss
-│   ├── _about.scss
-│   └── _contact.scss
-│
-├── themes/             # Client-specific overrides
-│   ├── _client-theme.scss  # ← auto-replaced at build time
-│   ├── _acme.scss          # Acme Corp: red palette, Oswald headings
-│   └── _globex.scss        # Globex: green palette, Nunito, rounded shapes
-│
+│   ├── _contact.scss
+│   └── _blog.scss
 ├── vendors/            # Third-party CSS
-│   ├── _normalize.scss
-│   └── _vendor-overrides.scss
-│
-└── main.scss           # Entry point – imports all partials in order
+└── themes/             # Client brand overrides
+    ├── _default.scss
+    ├── client-acme/
+    │   └── _overrides.scss    # Red palette, Oswald headings
+    └── client-globex/
+        └── _overrides.scss    # Green palette, Nunito, rounded shapes
 ```
 
 ### How Client Theming Works
 
-Client themes override **CSS custom properties** declared on `:root` in `base/_reset.scss`. This means:
-
-1. All SCSS compiles with default values (fast, cacheable builds)
-2. Client branding is applied through CSS custom properties
-3. Themes can even be swapped at runtime by changing CSS variables
+All styles use **CSS custom properties** declared on `:root`. Client themes simply override these variables — no SCSS recompilation of component styles needed:
 
 ```scss
-// src/scss/themes/_acme.scss
+// Styles/themes/client-acme/_overrides.scss
 :root {
-    --color-primary:  #e11d48;
-    --font-heading:   'Oswald', sans-serif;
-    --radius-md:      4px;
+    --color-primary: #e11d48;
+    --font-heading: 'Oswald', sans-serif;
+    --radius-md: 4px;
 }
 ```
 
-## Quick Start
+The build script (`build-theme.js`) compiles `main.scss` then appends the client override CSS, so client values win via the CSS cascade.
 
-### Add a new client
+## Feature Toggles
 
-```bash
-npm run new-client -- --id=newcorp --name="NewCorp Inc"
+Features are configured in `appsettings.json` (or client overlays) and used in Razor views via a custom `<feature>` tag helper:
+
+```json
+{
+  "Features": {
+    "Blog": true,
+    "ContactForm": true,
+    "Search": false
+  }
+}
 ```
 
-This scaffolds:
-- `config/clients/newcorp.json` – content & feature config
-- `src/scss/themes/_newcorp.scss` – brand theme overrides
-- `src/assets/images/clients/newcorp/` – logo & assets directory
+```html
+<!-- In any Razor view -->
+<feature name="Blog">
+    <li><a href="/blog">Blog</a></li>
+</feature>
 
-### Build & run locally
-
-```bash
-# Development (hot reload)
-CLIENT_ID=acme docker compose up dev
-
-# Production build
-CLIENT_ID=acme docker compose up --build client-site
-
-# Visit http://localhost:8080
+<feature name="ContactForm">
+    <form>...</form>
+</feature>
 ```
 
-### Build a Docker image
+When a feature is disabled, the tag helper suppresses the enclosed HTML entirely.
+
+## Accessibility
+
+This template follows WCAG 2.1 AA guidelines:
+
+- **Skip-to-content link** — visible on keyboard focus, bypasses navigation
+- **Semantic HTML** — proper heading hierarchy (h1 > h2 > h3), landmark regions (`<main>`, `<nav>`, `<header>`, `<footer>`)
+- **ARIA attributes** — `aria-label` on navigation landmarks, `aria-expanded` and `aria-controls` on mobile menu toggle
+- **Keyboard navigation** — all interactive elements are focusable, Escape key closes mobile menu, focus returns to toggle button
+- **Focus indicators** — visible `focus-visible` outlines on all interactive elements (links, buttons, form inputs)
+- **Reduced motion** — `prefers-reduced-motion` media query disables animations and transitions
+- **Screen reader support** — `.sr-only` utility class for visually hidden but accessible text
+- **Form labels** — all form inputs have associated `<label>` elements
+- **Alt text** — all images have descriptive `alt` attributes
+
+## Environment Variables
+
+Copy the example file and adjust as needed:
 
 ```bash
-docker build \
-    --build-arg CLIENT_ID=acme \
-    --build-arg ENVIRONMENT=production \
-    -t website-package:acme .
+cp .env.example .env
 ```
 
-### Deploy to Azure App Service
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CLIENT_ID` | `default` | Client ID for theme & config |
+| `SA_PASSWORD` | `Umbraco_Docker_P@ss1` | SQL Server SA password |
+| `UMBRACO_HTTP_PORT` | `8080` | Host HTTP port for Umbraco |
+| `UMBRACO_HTTPS_PORT` | `8443` | Host HTTPS port for Umbraco |
+| `SQL_PORT` | `1433` | Host port for SQL Server |
+| `UMBRACO_DB` | `UmbracoDb` | Database name |
+| `ASPNETCORE_ENVIRONMENT` | `Development` | ASP.NET environment |
+
+## Common Commands
 
 ```bash
-# Tag and push to Azure Container Registry
-az acr login --name yourregistry
-docker tag website-package:acme yourregistry.azurecr.io/website-package:acme-latest
-docker push yourregistry.azurecr.io/website-package:acme-latest
+# Start with default theme
+docker compose up -d
+
+# Start with a specific client theme
+CLIENT_ID=acme docker compose up --build -d
+
+# Using compose override (sets ports, DB name, client)
+docker compose -f docker-compose.yml -f docker-compose.acme.yml up --build -d
+
+# Rebuild after code changes
+docker compose up --build -d
+
+# View Umbraco logs
+docker compose logs -f umbraco
+
+# Stop all services
+docker compose down
+
+# Stop and remove all data (database, media)
+docker compose down -v
+```
+
+## Production Deployment
+
+For production use, consider the following:
+
+1. **Change the SA password** — use a strong password via the `SA_PASSWORD` environment variable
+2. **Change the default admin credentials** — update or remove the unattended install settings
+3. **Set `ASPNETCORE_ENVIRONMENT=Production`**
+4. **Use persistent storage** — mount volumes to reliable storage
+5. **Use a real TLS certificate** — Azure App Service provides managed certificates, or use a reverse proxy (Nginx, Traefik, Azure Application Gateway)
+
+### Azure App Service Deployment
+
+```bash
+# Build with client theme
+docker build --build-arg CLIENT_ID=acme \
+    -t your-registry.azurecr.io/umbraco-site:acme-latest .
+
+# Push to Azure Container Registry
+az acr login --name your-registry
+docker push your-registry.azurecr.io/umbraco-site:acme-latest
 
 # Deploy to App Service
 az webapp config container set \
     --name app-acme-prod \
     --resource-group your-rg \
-    --container-image yourregistry.azurecr.io/website-package:acme-latest \
-    --container-registry-url https://yourregistry.azurecr.io
+    --container-image your-registry.azurecr.io/umbraco-site:acme-latest
 
-# Set runtime overrides
+# Set runtime config
 az webapp config appsettings set \
     --name app-acme-prod \
     --resource-group your-rg \
-    --settings \
-        ANALYTICS_ID="G-XXXXXXXXXX" \
-        API_BASE_URL="https://api.acme.com"
+    --settings CLIENT_ID=acme ASPNETCORE_ENVIRONMENT=Production
+
+# Configure Azure SQL connection string
+az webapp config connection-string set \
+    --name app-acme-prod \
+    --resource-group your-rg \
+    --connection-string-type SQLAzure \
+    --settings umbracoDbDSN="Server=tcp:your-sql.database.windows.net,1433;Database=UmbracoDb;..."
 ```
 
-## Runtime Environment Variables
+Azure App Service handles HTTPS termination automatically with managed certificates, so the container's self-signed cert is only used for local development.
 
-These are injected at container startup (no rebuild needed):
+## Tech Stack
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SITE_TITLE` | Override page title | `"Acme Corp"` |
-| `ANALYTICS_ID` | GA4 or similar tracking ID | `"G-ABC123"` |
-| `API_BASE_URL` | Backend API endpoint | `"https://api.acme.com"` |
-| `FEATURE_FLAGS` | JSON string of feature flags | `'{"dark_mode":true}'` |
+- **Umbraco 17** — open-source .NET CMS
+- **.NET 10** — runtime and SDK
+- **Razor Views** — traditional server-rendered templates
+- **SQL Server 2022** — database (Linux container locally, Azure SQL in production)
+- **7-1 SCSS** — maintainable stylesheet architecture
+- **Docker** — multi-stage containerisation
+- **Docker Compose** — multi-container orchestration with per-client overrides
 
-## CI/CD
+## Troubleshooting
 
-The included `azure-pipelines.yml` automatically:
-1. Builds a Docker image for each configured client
-2. Pushes to Azure Container Registry
-3. Deploys to the corresponding Azure App Service
+| Issue | Solution |
+|-------|----------|
+| SQL Server won't start | Ensure Docker has at least 4 GB RAM allocated |
+| Connection refused on first start | SQL Server needs ~30s to initialise — Umbraco will retry |
+| Port conflict | Change `UMBRACO_HTTPS_PORT` or `SQL_PORT` in `.env` |
+| Browser certificate warning | Expected for self-signed cert — click Advanced > Proceed |
+| Umbraco database error | Check SQL Server logs: `docker compose logs sql` |
+| SCSS not compiling | Verify Node.js stage in `docker build` output |
+| Client theme not applied | Check `CLIENT_ID` is set and theme exists in `Styles/themes/client-{id}/` |
+| OAuth login loop | Ensure you are accessing via `https://localhost:8443`, not HTTP |
 
-See the pipeline file for configuration details.
+## License
+
+This template is provided as-is for use in your own projects. Umbraco CMS is licensed under the [MIT License](https://github.com/umbraco/Umbraco-CMS/blob/contrib/LICENSE.md).
