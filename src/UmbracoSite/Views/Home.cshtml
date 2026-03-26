@@ -1,0 +1,37 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Home>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Name;
+    var backgroundImage = Model.HeroBackgroundImage != null ? Model.HeroBackgroundImage.Url() : string.Empty;
+}
+
+<section class="hero hero--full-height overlay overlay--dark"
+         style="@(string.IsNullOrEmpty(backgroundImage) ? "" : $"background-image: url('{backgroundImage}')")">
+    <div class="container hero__content">
+        <h1>@Model.HeroHeader</h1>
+        <p class="hero__description">@Model.HeroDescription</p>
+        @if (Model.HeroCtalink != null)
+        {
+            <a class="btn btn--outline-light" href="@Model.HeroCtalink.Url">
+                @Model.HeroCtacaption
+            </a>
+        }
+    </div>
+</section>
+
+<section class="section">
+    @await Html.GetBlockGridHtmlAsync(Model.BodyText)
+</section>
+
+@if (Model.FooterCtalink != null)
+{
+<section class="section section--themed">
+    <div class="container text-center">
+        <h2>@Model.FooterHeader</h2>
+        <p class="hero__description mw-prose">@Model.FooterDescription</p>
+        <a class="btn btn--outline-light" href="@Model.FooterCtalink.Url">
+            @Model.FooterCtacaption
+        </a>
+    </div>
+</section>
+}

@@ -1,0 +1,42 @@
+@using Umbraco.Extensions
+@using Umbraco.Cms.Core.Models.PublishedContent
+
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem>
+
+@{
+    var numberOfPosts = Model.Content.Value<int>("numberOfPosts");
+    if (numberOfPosts <= 0) { numberOfPosts = 3; }
+
+    var startNode = Model.Content.Value<IPublishedContent>("startNode");
+
+    var posts = Enumerable.Empty<IPublishedContent>();
+    if (startNode != null)
+    {
+        posts = startNode
+            .DescendantsOrSelf()
+            .Where(x => x.ContentType.Alias == "blogPost" && x.IsPublished())
+            .OrderByDescending(x => x.CreateDate)
+            .Take(numberOfPosts);
+    }
+}
+
+@if (posts.Any())
+{
+    <div class="latest-blog-posts">
+        <div class="latest-blog-posts__grid">
+            @foreach (var post in posts)
+            {
+                <article class="latest-blog-posts__item">
+                    <a href="@post.Url()">
+                        <h3>@post.Name</h3>
+                        <time datetime="@post.CreateDate.ToString("yyyy-MM-dd")">
+                            @post.CreateDate.ToString("d MMMM yyyy")
+                        </time>
+                    </a>
+                </article>
+            }
+        </div>
+    </div>
+}
+
+@await Html.GetBlockGridItemAreasHtmlAsync(Model)
